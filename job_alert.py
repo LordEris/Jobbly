@@ -52,6 +52,7 @@ import ipaddress
 import functools
 import os
 import re
+import socket
 import time
 import unicodedata
 import argparse
@@ -114,11 +115,14 @@ def load_jobs_cache() -> dict:
             return {}
     return {}
 
-def save_jobs_cache(jobs: list) -> None:
-    cache = load_jobs_cache()
+def save_jobs_cache(jobs: list, cache: dict | None = None) -> None:
+    """Sauvegarde les offres dans le cache. Passer `cache` évite une relecture inutile."""
+    if cache is None:
+        cache = load_jobs_cache()
     for j in jobs:
         cache[j["id"]] = {k: v for k, v in j.items() if not k.startswith("_")}
-    _atomic_write(CACHE_FILE, json.dumps(cache, indent=2, ensure_ascii=False))
+    # JSON compact (fichier machine) — indent=2 inutile ici et gonfle la taille
+    _atomic_write(CACHE_FILE, json.dumps(cache, ensure_ascii=False, separators=(",", ":")))
 
 # ── Configuration de recherche (config.json) ─────────────────────────────────────
 
@@ -194,6 +198,7 @@ def _load_env_file() -> None:
         key, _, value = line.partition("=")
         key = key.strip()
         value = value.strip().strip('"').strip("'")
+        value = re.sub(r"\s+#.*$", "", value)   # strip inline comments (ex: KEY=val # note)
         if key and key not in os.environ:
             os.environ[key] = value
 
@@ -226,12 +231,14 @@ def save_seen(seen: set) -> None:
     _atomic_write(SEEN_FILE, json.dumps(sorted(seen), indent=2))
 
 def make_id(url: str, title: str) -> str:
-    return hashlib.md5(f"{url}|{title}".encode()).hexdigest()
+    return hashlib.sha256(f"{url}|{title}".encode()).hexdigest()[:32]
 
 # ── Source 1 : France Travail ─────────────────────────────────────────────────────
 
 _ft_token_cache: dict = {}
-_ft_token_lock = threading.Lock()   # protège le cache en contexte multi-thread
+_ft_token_lock = threading.Lock()   # protège le cache token FT en contexte multi-thread
+_status_lock   = threading.Lock()   # protège la lecture/écriture de status_jobs.json
+_config_lock   = threading.Lock()   # protège la lecture/écriture de config.json
 
 def _get_ft_token() -> str:
     now = time.time()
@@ -359,15 +366,16 @@ def fetch_adzuna(keyword: str, loc: dict) -> list:
         results = r.json().get("results", [])[:50]
         for o in results:
             loc_o   = o.get("location", {})
+            area    = loc_o.get("area") or []
             loc_str = ", ".join(filter(None, [
                 loc_o.get("display_name", ""),
-                next(iter(reversed(loc_o.get("area", []))), ""),
+                area[-1] if area else "",
             ])) or city
             jobs.append({
                 "title":    o.get("title", "")[:200],
                 "company":  o.get("company", {}).get("display_name", "")[:100],
                 "location": loc_str[:100],
-                "url":      o.get("redirect_url", ""),
+                "url":      f"https://www.adzuna.fr/details/{o.get('id', '')}" if o.get("id") else o.get("redirect_url", ""),
                 "date":     o.get("created", "")[:10],
                 "source":    "Adzuna",
                 "summary":   o.get("description", ""),
@@ -496,7 +504,7 @@ def fetch_careerjet(keyword: str, loc: dict) -> list:
     jobs = []
     try:
         r = requests.get(
-            "http://public.api.careerjet.net/search",
+            "https://public.api.careerjet.net/search",
             params={
                 "keywords":    keyword,
                 "location":    city,
@@ -535,12 +543,24 @@ def _is_public_url(url: str) -> bool:
         host = p.hostname or ""
         if not host:
             return False
+        # Vérification directe si c'est déjà une IP littérale
         try:
             ip = ipaddress.ip_address(host)
-            return ip.is_global and not ip.is_loopback
+            return ip.is_global and not ip.is_loopback and not ip.is_private
         except ValueError:
-            pass  # nom de domaine, pas une IP — OK
-        return host not in ("localhost",)
+            pass  # nom de domaine — continuer
+        if host in ("localhost",):
+            return False
+        # Résoudre le nom en IP pour éviter le DNS rebinding
+        try:
+            infos = socket.getaddrinfo(host, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+            for _fam, _type, _proto, _cname, sockaddr in infos:
+                ip = ipaddress.ip_address(sockaddr[0])
+                if not ip.is_global or ip.is_loopback or ip.is_private:
+                    return False
+        except (socket.gaierror, ValueError):
+            return False  # impossible à résoudre → refuser
+        return True
     except Exception:
         return False
 
@@ -685,35 +705,43 @@ def collect_all() -> list:
         cj = fetch_careerjet(kw, loc)
         return ft, az, jb, cj
 
-    ft_raw: list = []
-    az_raw: list = []
-    jb_raw: list = []
-    cj_raw: list = []
-    n_workers = min(len(pairs), 6)
-    with ThreadPoolExecutor(max_workers=n_workers) as pool:
-        futures = {pool.submit(_fetch_pair, p): p for p in pairs}
-        for future in as_completed(futures):
-            kw, loc = futures[future]
-            print(f"  • {kw!r} @ {loc['city']} (rayon {loc.get('radius', 30)} km)")
-            try:
-                ft, az, jb, cj = future.result()
-                ft_raw += ft
-                az_raw += az
-                jb_raw += jb
-                cj_raw += cj
-            except Exception as exc:
-                print(f"    Erreur : {type(exc).__name__}")
-
-    # La Bonne Alternance : par ville uniquement (ROME, pas mots-clés)
+    ft_raw:  list = []
+    az_raw:  list = []
+    jb_raw:  list = []
+    cj_raw:  list = []
     lba_raw: list = []
-    for loc in locations:
-        print(f"  • La Bonne Alternance @ {loc['city']}")
-        lba_raw += fetch_lba(loc)
+    # LBA soumise dans le même pool (par ville, indépendante des mots-clés)
+    n_workers = min(len(pairs) + len(locations), 10)
+    with ThreadPoolExecutor(max_workers=n_workers) as pool:
+        pair_futures = {pool.submit(_fetch_pair, p): p for p in pairs}
+        lba_futures  = {pool.submit(fetch_lba, loc): loc for loc in locations}
+        all_futures  = {**pair_futures, **lba_futures}
+        for future in as_completed(all_futures):
+            if future in lba_futures:
+                loc = lba_futures[future]
+                print(f"  • La Bonne Alternance @ {loc['city']}")
+                try:
+                    lba_raw += future.result()
+                except Exception as exc:
+                    print(f"    [La Bonne Alternance] Erreur : {type(exc).__name__}")
+            else:
+                kw, loc = pair_futures[future]
+                print(f"  • {kw!r} @ {loc['city']} (rayon {loc.get('radius', 30)} km)")
+                try:
+                    ft, az, jb, cj = future.result()
+                    ft_raw += ft
+                    az_raw += az
+                    jb_raw += jb
+                    cj_raw += cj
+                except Exception as exc:
+                    print(f"    Erreur : {type(exc).__name__}")
 
     # Ordre de priorité dans la déduplication : FT > LBA > Jooble > Careerjet > Adzuna
     raw = ft_raw + lba_raw + jb_raw + cj_raw + az_raw
 
-    raw = _resolve_adzuna_urls(raw)
+    # Résolution des redirections Adzuna désactivée : on utilise directement
+    # adzuna.fr/details/{id} qui ne souffre pas du quota de redirection API.
+    # raw = _resolve_adzuna_urls(raw)
 
     # ── Passe 1 : déduplication par URL exacte ────────────────────────────────────
     seen_urls: set = set()
@@ -754,6 +782,12 @@ def collect_all() -> list:
         for existing in final:
             words_e = existing["_words"]
             if len(words_e) < MIN_WORDS_FOR_CONTENT_MATCH:
+                continue
+            # Pré-filtre : si ratio de longueur < seuil, la similarité max possible
+            # (containment) ne peut pas atteindre SIMILARITY_THRESHOLD → skip immédiat
+            min_len = min(len(words_j), len(words_e))
+            max_len = max(len(words_j), len(words_e))
+            if max_len > 0 and min_len / max_len < SIMILARITY_THRESHOLD:
                 continue
             if _similarity(words_j, words_e) >= SIMILARITY_THRESHOLD:
                 _merge_into(existing, j)
@@ -836,12 +870,13 @@ class _StatusHandler(BaseHTTPRequestHandler):
                 job_id = str(body.get("id", ""))[:64]
                 status = str(body.get("status", ""))
                 if job_id and status in STATUS_OPTIONS:
-                    statuses = load_statuses()
-                    if status:
-                        statuses[job_id] = status
-                    else:
-                        statuses.pop(job_id, None)
-                    save_statuses(statuses)
+                    with _status_lock:   # protège contre les requêtes POST simultanées
+                        statuses = load_statuses()
+                        if status:
+                            statuses[job_id] = status
+                        else:
+                            statuses.pop(job_id, None)
+                        save_statuses(statuses)
                 self._send_json(200, b'{"ok":true}')
             except (OSError, ValueError) as exc:
                 self._send_json(500, json.dumps({"error": type(exc).__name__}).encode())
@@ -851,6 +886,7 @@ class _StatusHandler(BaseHTTPRequestHandler):
             if body is None:
                 return
             try:
+              with _config_lock:   # protège contre les requêtes POST simultanées
                 cfg = load_config()
                 if "keywords" in body:
                     kws = [
@@ -867,8 +903,9 @@ class _StatusHandler(BaseHTTPRequestHandler):
                         if not city:
                             continue
                         loc_entry: dict = {"city": city, "radius": radius}
-                        if raw_loc.get("insee"):
-                            loc_entry["insee"] = str(raw_loc["insee"])[:10]
+                        raw_insee = str(raw_loc.get("insee", "")).strip()
+                        if raw_loc.get("insee") and re.match(r"^\d{5}$", raw_insee):
+                            loc_entry["insee"] = raw_insee
                             try:
                                 lat = float(raw_loc.get("lat") or 0)
                                 lon = float(raw_loc.get("lon") or 0)
@@ -896,12 +933,13 @@ class _StatusHandler(BaseHTTPRequestHandler):
             try:
                 job_id = re.sub(r"[^a-f0-9]", "", str(body.get("id", "")))[:64]
                 if job_id:
-                    cfg = load_config()
-                    blocked = cfg.get("blocked_ids", [])
-                    if job_id not in blocked:
-                        blocked.append(job_id)
-                    cfg["blocked_ids"] = blocked
-                    save_config(cfg)
+                    with _config_lock:   # protège contre les requêtes POST simultanées
+                        cfg = load_config()
+                        blocked = cfg.get("blocked_ids", [])
+                        if job_id not in blocked:
+                            blocked.append(job_id)
+                        cfg["blocked_ids"] = blocked
+                        save_config(cfg)
                 self._send_json(200, b'{"ok":true}')
             except (OSError, ValueError) as exc:
                 self._send_json(500, json.dumps({"error": type(exc).__name__}).encode())
@@ -913,6 +951,11 @@ class _StatusHandler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'unsafe-inline'; "
+            "style-src 'unsafe-inline'; img-src data: 'self'; connect-src 'self'"
+        )
 
     def _serve_report(self):
         try:
@@ -1218,7 +1261,6 @@ def _safe_url(url: str) -> str:
 
 def _domain(url: str) -> str:
     try:
-        from urllib.parse import urlparse
         host = urlparse(url).netloc.lower()
         return host.removeprefix("www.")
     except Exception:
@@ -1236,7 +1278,7 @@ def _source_badges(sources: list) -> str:
         href   = _SOURCE_SEARCH_URLS.get(src, "#")
         badges.append(
             f'<a class="badge" href="{href}" target="_blank" rel="noopener noreferrer" '
-            f'style="background:{bg};color:{fg};text-decoration:none">{src}</a>'
+            f'style="background:{bg};color:{fg};text-decoration:none">{html.escape(src)}</a>'
         )
     return " ".join(badges)
 
@@ -1659,22 +1701,24 @@ function toggleAltOnly() {{
 }}
 
 // ── Navigation liste ↔ détail ────────────────────────────────
+var _currentOffer = null;   // perf: évite querySelectorAll(".offer-page") à chaque clic
+
 function showOffer(id) {{
+  if (_currentOffer) {{ _currentOffer.style.display = "none"; }}
   document.getElementById("main-view").style.display = "none";
-  document.querySelectorAll(".offer-page").forEach(function(p) {{ p.style.display = "none"; }});
-  var page = document.getElementById("offer-" + id);
-  if (page) {{
-    page.style.display = "block";
+  _currentOffer = document.getElementById("offer-" + id);
+  if (_currentOffer) {{
+    _currentOffer.style.display = "block";
     // Synchroniser le statut sur la page de détail
     var status = (document.querySelector('.card[data-job-id="' + id + '"]') || {{}}).dataset?.status || "";
-    var sel = page.querySelector(".status-select");
+    var sel = _currentOffer.querySelector(".status-select");
     if (sel) {{ sel.value = status; _styleSelect(sel, status); }}
   }}
   history.pushState({{offer: id}}, "", "#offer-" + id);
 }}
 
 function backToList() {{
-  document.querySelectorAll(".offer-page").forEach(function(p) {{ p.style.display = "none"; }});
+  if (_currentOffer) {{ _currentOffer.style.display = "none"; _currentOffer = null; }}
   document.getElementById("main-view").style.display = "";
   history.pushState(null, "", window.location.pathname);
 }}
@@ -2023,7 +2067,7 @@ def main():
                 archived["_expire_reason"] = f"Date d'échéance dépassée ({_fmt_date(expires)})"
                 jobs.append(archived)
 
-    save_jobs_cache(jobs)
+    save_jobs_cache(jobs, cache)   # cache déjà chargé : évite une 2e lecture du fichier
 
     new_ids = {j["id"] for j in jobs if j["id"] not in seen and not j.get("_archived")}
 
@@ -2033,7 +2077,7 @@ def main():
     save_seen(seen)
 
     report_html = generate_html(jobs, new_ids, server_mode=args.serve)
-    REPORT_FILE.write_text(report_html, encoding="utf-8")
+    _atomic_write(REPORT_FILE, report_html)   # écriture atomique — évite HTML corrompu si le serveur lit en même temps
     print(f"\n  Rapport : {REPORT_FILE}")
 
     if args.serve:
