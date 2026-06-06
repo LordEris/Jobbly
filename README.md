@@ -7,9 +7,9 @@
 
 # 🔧 Jobbly — Alerte Emploi Automatique
 
-Outil de veille automatique d'offres d'emploi pour alternance / apprentissage en **plomberie**, **chauffage** et **sanitaire** autour d'**Orléans** et **Tours**.
+Outil de veille automatique d'offres d'emploi — agrège, déduplique et présente les annonces de 5 sources en un seul rapport HTML interactif. Mots-clés et zones de recherche entièrement configurables, non stockés dans le dépôt.
 
-Agrège, déduplique et présente les offres de 5 sources en un seul rapport HTML interactif — mis à jour en un clic ou automatiquement toutes les heures via le Planificateur de tâches Windows.
+Mis à jour en un clic ou automatiquement toutes les heures via le Planificateur de tâches Windows.
 
 ---
 
