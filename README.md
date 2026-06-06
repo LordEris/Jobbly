@@ -85,7 +85,17 @@ ADZUNA_APP_ID=xxxxxxxx
 ADZUNA_APP_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-> Les mots-clés, villes et rayons sont éditables directement dans le rapport HTML via le bouton ⚙️ **Paramètres**.
+### Paramètres de recherche (mots-clés et villes)
+
+Les paramètres de recherche sont stockés dans `config.json` — ce fichier est dans `.gitignore` et ne sera jamais versionné (données personnelles).
+
+Pour démarrer, copiez le fichier d'exemple fourni :
+
+```bat
+copy config.exemple.json config.json
+```
+
+Puis éditez `config.json` ou utilisez directement le bouton ⚙️ **Paramètres** dans le rapport HTML pour modifier mots-clés, villes et rayons sans toucher au fichier.
 
 ---
 
@@ -122,12 +132,16 @@ Configure le Planificateur de tâches Windows pour relancer le script toutes les
 ```
 Jobbly/
 ├── job_alert.py                  # Script principal (2 113 lignes, 44 fonctions)
-├── .env                          # Identifiants API — ne pas versionner
-├── config.json                   # Paramètres de recherche (généré automatiquement)
+├── config.exemple.json           # Modèle de configuration — versionné ✅
+│
+│   — fichiers ignorés par git (.gitignore) —
+├── .env                          # Identifiants API — secrets 🔒
+├── config.json                   # Mots-clés et villes personnels 🔒
 ├── rapport_offres.html           # Rapport généré (mis à jour à chaque exécution)
 ├── seen_jobs.json                # IDs des offres déjà vues
 ├── status_jobs.json              # Statuts de candidature par offre
-├── jobs_cache.json               # Cache des offres pour la persistance
+└── jobs_cache.json               # Cache des offres pour la persistance
+│
 ├── installer.ps1                 # Installation des dépendances
 ├── planifier.ps1                 # Configuration tâche planifiée Windows
 ├── Lancer (mode interactif).bat  # Lancement serveur + rapport
@@ -138,7 +152,7 @@ Jobbly/
 
 ## 🔒 Sécurité
 
-- Le fichier `.env` est listé dans `.gitignore` — il ne sera jamais versionné
+- `.env` (identifiants API) et `config.json` (mots-clés, villes) sont dans `.gitignore` — jamais versionnés
 - Protection CSRF par vérification de l'entête `Origin`
 - Protection SSRF : résolution DNS + vérification IP avant toute requête externe
 - Échappement HTML systématique (`html.escape`) sur toutes les données tierces

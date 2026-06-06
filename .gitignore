@@ -1,6 +1,9 @@
 # Secrets — ne jamais versionner
 .env
 
+# Paramètres de recherche personnels (mots-clés, villes, rayons)
+config.json
+
 # Données générées automatiquement
 seen_jobs.json
 rapport_offres.html
