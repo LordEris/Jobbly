@@ -1,4 +1,4 @@
-![licence](https://img.shields.io/badge/licence-Source%20Available-blueviolet)
+[![licence](https://img.shields.io/badge/licence-PolyForm%20NC%201.0-blueviolet)](LICENSE)
 ![langage](https://img.shields.io/badge/langage-Python%203-orange)
 ![plateforme](https://img.shields.io/badge/plateforme-Windows%2011-blue)
 ![sources](https://img.shields.io/badge/sources-5%20APIs-brightgreen)
@@ -159,3 +159,21 @@ Jobbly/
 - En-têtes de sécurité : `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy`, `Referrer-Policy`
 - Écriture atomique des fichiers JSON et HTML (`os.replace`)
 - Verrous threading sur les écritures concurrentes (`status_lock`, `config_lock`)
+
+---
+
+## 📄 Licence
+
+Ce projet est distribué sous licence **[PolyForm Noncommercial 1.0.0](LICENSE)**.
+
+| Usage | Autorisé |
+|-------|----------|
+| Usage personnel | ✅ |
+| Étude, recherche, enseignement | ✅ |
+| Projets associatifs / non lucratifs | ✅ |
+| Modification et redistribution non commerciale | ✅ |
+| **Usage commercial** | ❌ Nécessite une autorisation écrite |
+
+Pour toute demande d'usage commercial, contactez le propriétaire via [GitHub](https://github.com/LordEris).
+
+© 2025 Evan Sajotoudin (LordEris)
