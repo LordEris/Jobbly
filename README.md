@@ -176,4 +176,4 @@ Ce projet est distribué sous licence **[PolyForm Noncommercial 1.0.0](LICENSE)*
 
 Pour toute demande d'usage commercial, contactez le propriétaire via [GitHub](https://github.com/LordEris).
 
-© 2025 LordEris
+© 2026 LordEris
