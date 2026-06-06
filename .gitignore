@@ -1,0 +1,8 @@
+# Secrets — ne jamais versionner
+.env
+
+# Données générées automatiquement
+seen_jobs.json
+rapport_offres.html
+status_jobs.json
+jobs_cache.json
