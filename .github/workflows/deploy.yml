@@ -1,0 +1,361 @@
+name: Deploy to IONOS
+
+# Publie Jobbly sur jobbly.lorderis.dev : le site statique du dépôt (aucune
+# construction, le fichier du dépôt est le fichier servi), adossé au projet
+# Supabase commun, envoyé dans `website-jobbly/` de l'hébergement IONOS, et
+# nulle part ailleurs.
+#
+# Aligné sur le gabarit SFTP commun aux dépôts qui publient sur cet
+# hébergement (celui de Schedules, le plus récent) — mêmes secrets, même
+# contrôle préalable, même destination contrôlée, envoi en trois temps, même
+# relecture. Ce qui est propre à Jobbly : rien ne se construit, mais le dépôt
+# porte aussi ce qui n'est PAS le site (la fonction Edge dans supabase/, la
+# documentation, les outils, et l'ancien script Windows tant qu'il n'est pas
+# retiré). On n'envoie donc pas le dépôt : on assemble le site, par une liste
+# FERMÉE (« Assembler le site »), et seul ce dossier part. Le .htaccess refuse
+# en plus tout le reste, au cas où un envoi à la main l'emporterait.
+#
+# Déclenché à chaque push sur `main`, et à la main (Actions → « Deploy to
+# IONOS » → Run workflow), avec une option « Test seulement » qui vérifie
+# l'accès SFTP et la destination sans rien envoyer. La fonction jobbly-search
+# ne passe pas par ici : elle se déploie à la main
+# (supabase functions deploy jobbly-search).
+#
+# Une seule tâche, qui ne fait que LIRE le dépôt.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      test_only:
+        description: "Test seulement : vérifier l'accès SFTP et la destination, sans rien envoyer"
+        type: boolean
+        default: false
+
+# Le déploiement ne fait que LIRE le dépôt : il envoie ses fichiers ailleurs,
+# avec les identifiants SFTP.
+permissions:
+  contents: read
+
+# Deux fusions rapprochées : la seconde attend la fin de la première au lieu
+# d'envoyer ses fichiers par-dessus pendant le `mirror --delete`.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+env:
+  # L'adresse publiée du site. Elle est aussi celle qu'admet le CORS de la
+  # fonction jobbly-search, et l'origine JavaScript déclarée chez Google.
+  SITE_ORIGIN: https://jobbly.lorderis.dev
+  # Le dossier du site sur l'hébergement, et le seul où il part.
+  SITE_DIR: website-jobbly
+  # Anciens noms du dossier : aucun, c'est le premier site de Jobbly.
+  OLD_SITE_DIRS: ""
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # Le jeton reste hors de .git/config : rien de ce qui tourne ensuite
+          # n'a à le lire.
+          persist-credentials: false
+
+      - name: Vérifier les secrets de déploiement
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+          FTP_KNOWN_HOSTS: ${{ secrets.FTP_KNOWN_HOSTS }}
+        run: |
+          # Cinq secrets, tous requis. Sans ce contrôle, lftp répondait
+          # « Not connected » sans dire lequel manquait.
+          missing=()
+          [ -n "$FTP_SERVER" ]      || missing+=(FTP_SERVER)
+          [ -n "$FTP_USERNAME" ]    || missing+=(FTP_USERNAME)
+          [ -n "$FTP_PASSWORD" ]    || missing+=(FTP_PASSWORD)
+          [ -n "$FTP_REMOTE_DIR" ]  || missing+=(FTP_REMOTE_DIR)
+          [ -n "$FTP_KNOWN_HOSTS" ] || missing+=(FTP_KNOWN_HOSTS)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Secrets absents de ce dépôt : ${missing[*]}"
+            echo
+            echo "À poser dans Settings → Secrets and variables → Actions :"
+            echo "  FTP_SERVER      hôte SFTP IONOS"
+            echo "  FTP_USERNAME    utilisateur SFTP"
+            echo "  FTP_PASSWORD    mot de passe SFTP"
+            echo "  FTP_REMOTE_DIR  dossier où publier, tel que le compte SFTP le voit :"
+            echo "                  « /$SITE_DIR » avec un compte qui voit tout l'hébergement,"
+            echo "                  « / » avec un compte limité à ce dossier"
+            echo "  FTP_KNOWN_HOSTS clé d'hôte, obtenue par ssh-keyscan <hôte-sftp>"
+            echo "                  depuis une machine de confiance"
+            exit 1
+          fi
+          echo "Les cinq secrets requis sont présents."
+
+      # FTP_REMOTE_DIR est le dossier OÙ L'ON PUBLIE, tel que le compte SFTP le
+      # voit ; le workflow n'y ajoute rien. Deux valeurs, et deux seulement :
+      #   - « /website-jobbly » (ou « /website-jobbly/ ») avec un compte qui
+      #     voit tout l'hébergement — le réglage posé par le propriétaire ;
+      #   - « / » avec un compte SFTP limité (chrooté) au dossier du site.
+      # Contrôlé avant tout le reste, parce que le `mirror --delete` qui suit
+      # efface tout ce que le dossier contient d'autre : toute autre valeur
+      # est refusée, sans défaut.
+      - name: Dossier distant
+        env:
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+        run: |
+          refuse() {
+            echo "::error::$1"
+            echo "Valeur à poser dans le secret FTP_REMOTE_DIR :"
+            echo "  /$SITE_DIR   avec un compte SFTP qui voit tout l'hébergement"
+            echo "  /   avec un compte SFTP limité à ce dossier"
+            exit 1
+          }
+          dir="$FTP_REMOTE_DIR"
+          [ -n "$dir" ] || refuse "FTP_REMOTE_DIR est vide : aucun dossier n'est pris par défaut."
+          case "$dir" in
+            /) site=/ ;;
+            "/$SITE_DIR" | "/$SITE_DIR/") site="/$SITE_DIR" ;;
+            *) refuse "FTP_REMOTE_DIR ($dir) n'est ni « /$SITE_DIR » ni « / »." ;;
+          esac
+          for old in $OLD_SITE_DIRS; do
+            [ "$site" != "/$old" ] || refuse "FTP_REMOTE_DIR ($dir) désigne l'ancien dossier $old."
+          done
+          # Sans barre oblique finale, sauf « / » : avec, `mirror` ajouterait au
+          # chemin distant le nom du dossier source.
+          echo "REMOTE_SITE=$site" >> "$GITHUB_ENV"
+          echo "Destination : $site"
+
+      # Le site, et rien d'autre : une liste FERMÉE. Un fichier ajouté au site
+      # s'ajoute ici, sinon il ne part pas — ce qui se voit à la première
+      # vérification, au lieu qu'un fichier interne parte sans qu'on le sache.
+      - name: Assembler le site
+        run: |
+          rm -rf _site && mkdir _site
+          cp index.html offres.html confidentialite.html .htaccess _site/
+          cp -R assets _site/assets
+          echo "Site assemblé :"
+          (cd _site && find . -type f | sort)
+
+      - name: Vérifier le site assemblé
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          # Ce qui ne doit jamais partir : la fonction Edge, la documentation,
+          # les outils, les workflows, le Markdown, et l'ancien script Windows.
+          bad=$(cd _site && find . \( -path './supabase*' -o -path './docs*' -o -path './tools*' -o -path './.github*' \
+                 -o -name '*.md' -o -name '*.py' -o -name '*.ps1' -o -name '*.bat' -o -name '*.mjs' -o -name '*.ts' \
+                 -o -name 'requirements.txt' -o -name 'config.exemple.json' -o -name 'LICENSE' \) -print)
+          [ -z "$bad" ] || fail "fichiers internes dans le site assemblé : $bad"
+          # Les fichiers dont l'absence ne se verrait qu'en production.
+          for f in index.html offres.html confidentialite.html .htaccess \
+                   assets/js/theme-init.js assets/js/prefs.js assets/js/presentation.js assets/js/app.js \
+                   assets/js/rules.js assets/js/i18n.js assets/js/supabase.js assets/js/google-auth.js assets/js/toc-spy.js \
+                   assets/css/jobbly.css assets/css/presentation.css assets/css/legal.css \
+                   assets/css/lorderis-footer.css assets/css/lorderis-toggles.css assets/img/icone.svg; do
+            [ -f "_site/$f" ] || fail "_site/$f absent"
+          done
+          # Chaque fichier qu'une page cite est dans le site.
+          for page in index.html offres.html confidentialite.html; do
+            for ref in $(grep -oE '(src|href)="/?assets/[^"?#]+' "_site/$page" | sed -E 's/^(src|href)="\/?//' | sort -u); do
+              [ -f "_site/$ref" ] || fail "$page cite $ref, absent du site"
+            done
+          done
+          # Aucun script ni style en ligne, aucun gestionnaire on…= : la CSP les
+          # refuserait, et la page resterait muette.
+          for page in index.html offres.html confidentialite.html; do
+            if grep -Eq '<script>|<script [^>]*>[^<]|<style|style="| on[a-z]+="' "_site/$page"; then
+              fail "$page porte un script, un style ou un gestionnaire en ligne, que la CSP refuse"
+            fi
+          done
+          # Le projet Supabase du code est celui que la CSP de l'appli nomme, et
+          # la clé n'est pas une clé secrète.
+          url=$(grep -oE "SUPABASE_URL = '[^']+'" _site/assets/js/supabase.js | cut -d"'" -f2)
+          key=$(grep -oE "SUPABASE_PUBLISHABLE_KEY = '[^']+'" _site/assets/js/supabase.js | cut -d"'" -f2)
+          [ -n "$url" ] && [ -n "$key" ] || fail "URL ou clé Supabase introuvable dans assets/js/supabase.js"
+          grep -q "connect-src[^;\"]*$url" _site/.htaccess || fail "$url absent de connect-src dans .htaccess"
+          case "$key" in sb_secret_*|eyJ*) fail "la clé de assets/js/supabase.js n'est pas une clé publiable" ;; esac
+          grep -q '^DirectoryIndex index.html$' _site/.htaccess || fail ".htaccess ne sert plus la présentation à /"
+          echo "Site complet :"
+          du -sh _site
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Force timestamps
+        run: find _site -type f -exec touch {} +
+
+      - name: Prepare SFTP host key
+        env:
+          FTP_KNOWN_HOSTS: ${{ secrets.FTP_KNOWN_HOSTS }}
+        run: |
+          # La clé d'hôte n'est pas facultative : sans le secret, on échoue.
+          # `sftp:auto-confirm yes` ferait accepter la clé de n'importe quel
+          # serveur répondant à cette adresse, puis lui enverrait l'identifiant
+          # et le mot de passe de déploiement.
+          if [ -z "$FTP_KNOWN_HOSTS" ]; then
+            echo "::error::FTP_KNOWN_HOSTS absent — déploiement interrompu."
+            exit 1
+          fi
+          mkdir -p ~/.ssh && printf '%s\n' "$FTP_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          HOSTKEY="set sftp:auto-confirm no; set sftp:connect-program \"ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts\""
+          echo "HOSTKEY=$HOSTKEY" >> "$GITHUB_ENV"
+
+      # On regarde ce que contient la destination avant d'y rien envoyer : un
+      # dossier `website-*` n'a rien à faire dans le dossier d'un site, sa
+      # présence trahit la racine d'un compte qui voit tout l'hébergement (avec
+      # « / »), ou une erreur de chemin. Le `--delete` les effacerait. Un
+      # listage impossible arrête l'envoi : on ne publie pas à l'aveugle.
+      - name: Contrôler la destination
+        env:
+          SFTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          SFTP_USER: ${{ secrets.FTP_USERNAME }}
+          SFTP_HOST: ${{ secrets.FTP_SERVER }}
+        run: |
+          # Un compte en fait limité au dossier du site, avec FTP_REMOTE_DIR =
+          # /website-jobbly, créerait un sous-dossier que personne ne sert
+          # (leçon de Schedules, novembre 2026). Si la racine du compte ne
+          # contient aucun autre site, c'est un compte limité : on publie à sa
+          # racine.
+          if [ "$REMOTE_SITE" != / ]; then
+            if lftp -c "
+              set cmd:fail-exit yes
+              $HOSTKEY
+              set net:timeout 60
+              set net:max-retries 3
+              open -u '$SFTP_USER','$SFTP_PASS' sftp://$SFTP_HOST
+              cls -1 --classify /
+            " > /tmp/root_listing.txt; then
+              root_others=$(grep -E '^website-[^/]+[/@]$' /tmp/root_listing.txt | grep -vxF "$SITE_DIR/" || true)
+              if [ -z "$root_others" ]; then
+                echo "::notice::Compte SFTP limité au site : publication à sa racine (« / ») au lieu de $REMOTE_SITE."
+                REMOTE_SITE=/
+                echo "REMOTE_SITE=/" >> "$GITHUB_ENV"
+              fi
+            fi
+          fi
+          if ! lftp -c "
+            set cmd:fail-exit yes
+            $HOSTKEY
+            set net:timeout 60
+            set net:max-retries 3
+            open -u '$SFTP_USER','$SFTP_PASS' sftp://$SFTP_HOST
+            mkdir -p -f '$REMOTE_SITE'
+            cd '$REMOTE_SITE'
+            cls -1 --classify
+          " > /tmp/remote_listing.txt; then
+            echo "::error::Impossible de lister $REMOTE_SITE sur le serveur : envoi refusé plutôt que de publier à l'aveugle."
+            exit 1
+          fi
+          others=$(grep -E '^website-[^/]+[/@]$' /tmp/remote_listing.txt || true)
+          # Avec « / », un sous-dossier « website-jobbly/ » n'est pas un autre
+          # site : c'est la copie d'un envoi fait avec /website-jobbly depuis un
+          # compte limité. Le `mirror --delete` l'efface. Tout autre dossier de
+          # site refuse l'envoi.
+          if [ "$REMOTE_SITE" = / ]; then
+            if grep -qxF "$SITE_DIR/" <<< "$others"; then
+              echo "::notice::$SITE_DIR/ trouvé dans le dossier du site : copie d'un envoi précédent, effacée par cet envoi."
+            fi
+            others=$(grep -vxF "$SITE_DIR/" <<< "$others" || true)
+          fi
+          if [ -n "$others" ]; then
+            echo "::error::$REMOTE_SITE contient d'autres sites : le --delete les effacerait."
+            sed 's/^/  /' <<< "$others"
+            echo "Avec un compte qui voit tout l'hébergement, poser FTP_REMOTE_DIR = /$SITE_DIR ;"
+            echo "ou créer un compte SFTP limité au dossier $SITE_DIR et garder « / »."
+            exit 1
+          fi
+          echo "Destination $REMOTE_SITE : $(wc -l < /tmp/remote_listing.txt) entrée(s), aucun autre site."
+
+      - name: Deploy via SFTP
+        if: ${{ !inputs.test_only }}
+        env:
+          SFTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          SFTP_USER: ${{ secrets.FTP_USERNAME }}
+          SFTP_HOST: ${{ secrets.FTP_SERVER }}
+        run: |
+          # `_site` et non `.` : c'est le site qui est publié, pas le dépôt.
+          # En trois temps, pour qu'une page chargée PENDANT l'envoi trouve ce
+          # qu'elle cite : d'abord tout sauf les pages (scripts, feuilles,
+          # images et .htaccess arrivent à côté des anciens), puis les pages,
+          # enfin `--delete`, qui retire ce qui n'est plus dans le site. Pas de
+          # copie `fichier~date~` des fichiers remplacés (xfer:make-backup).
+          lftp -c "
+            $HOSTKEY
+            set net:timeout 60
+            set net:max-retries 3
+            set xfer:make-backup no
+            open -u '$SFTP_USER','$SFTP_PASS' sftp://$SFTP_HOST
+            mkdir -p -f '$REMOTE_SITE'
+            mirror --reverse --overwrite --exclude-glob '*.html' \
+              _site '$REMOTE_SITE'
+            put _site/offres.html -o '${REMOTE_SITE%/}/offres.html'
+            put _site/confidentialite.html -o '${REMOTE_SITE%/}/confidentialite.html'
+            put _site/index.html -o '${REMOTE_SITE%/}/index.html'
+            mirror --reverse --overwrite --delete \
+              _site '$REMOTE_SITE'
+          "
+
+      - name: Verify remote
+        if: ${{ !inputs.test_only }}
+        env:
+          SFTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          SFTP_USER: ${{ secrets.FTP_USERNAME }}
+          SFTP_HOST: ${{ secrets.FTP_SERVER }}
+        run: |
+          # Mêmes délai et réessais que le déploiement : une vérification qui
+          # échoue au premier hoquet réseau ferait échouer un déploiement qui,
+          # lui, a réussi.
+          lftp -c "
+            $HOSTKEY
+            set net:timeout 60
+            set net:max-retries 3
+            open -u '$SFTP_USER','$SFTP_PASS' sftp://$SFTP_HOST
+            get '${REMOTE_SITE%/}/index.html' -o /tmp/remote_index.html
+            get '${REMOTE_SITE%/}/offres.html' -o /tmp/remote_offres.html
+            get '${REMOTE_SITE%/}/.htaccess' -o /tmp/remote_htaccess
+          "
+          cmp -s /tmp/remote_index.html _site/index.html || { echo "::error::index.html distant différent de celui qui vient d'être envoyé."; exit 1; }
+          cmp -s /tmp/remote_offres.html _site/offres.html || { echo "::error::offres.html distant différent de celui qui vient d'être envoyé."; exit 1; }
+          cmp -s /tmp/remote_htaccess _site/.htaccess || { echo "::error::.htaccess distant différent de celui du site."; exit 1; }
+          echo "Fichiers relus dans $REMOTE_SITE."
+
+      # Le dossier relu ci-dessus est-il bien celui que sert l'adresse
+      # publique ? On demande la page au site, comme un visiteur. Tant que le
+      # sous-domaine n'est pas pointé sur website-jobbly chez IONOS, il ne
+      # répond pas, ou pas avec ce site : l'étape le DIT en avertissement, sans
+      # faire échouer un envoi qui, lui, a réussi. Un site qui répond avec la
+      # bonne page mais sans CSP, en revanche, échoue : le .htaccess n'y est
+      # pas lu.
+      - name: Vérifier le site publié
+        if: ${{ !inputs.test_only }}
+        run: |
+          fetch() { curl -fsSL --retry 3 --retry-delay 10 --retry-all-errors --max-time 30 "$@"; }
+          if ! fetch -D /tmp/served_headers -o /tmp/served_index.html "$SITE_ORIGIN/"; then
+            echo "::warning::$SITE_ORIGIN/ ne répond pas encore : le sous-domaine est-il créé chez IONOS et pointé sur $SITE_DIR, avec son certificat ? Les fichiers, eux, sont envoyés et relus."
+            exit 0
+          fi
+          if ! cmp -s /tmp/served_index.html _site/index.html; then
+            echo "::warning::$SITE_ORIGIN/ répond, mais pas avec la présentation qui vient d'être envoyée : le sous-domaine pointe-t-il sur $SITE_DIR ?"
+            exit 0
+          fi
+          grep -qi '^content-security-policy:' /tmp/served_headers \
+            || { echo "::error::$SITE_ORIGIN est servi sans CSP : le .htaccess n'est pas lu."; exit 1; }
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_ORIGIN/job_alert.py")
+          case "$code" in 403|404) ;; *) echo "::error::$SITE_ORIGIN/job_alert.py répond $code au lieu d'être refusé."; exit 1 ;; esac
+          echo "Déploiement vérifié : $SITE_ORIGIN"
+
+      # Lancé à la main avec « Test seulement » : tout ce qui précède a tourné
+      # (secrets, dossier, assemblage, clé d'hôte, connexion, contenu de la
+      # destination), rien n'a été envoyé ni effacé sur l'hébergement.
+      - name: Test seulement
+        if: ${{ inputs.test_only }}
+        run: |
+          echo "Test réussi : accès SFTP et destination ($REMOTE_SITE) vérifiés."
+          echo "Rien n'a été envoyé ni effacé sur l'hébergement."
