@@ -127,8 +127,9 @@ l'appareil sous `jobbly:prefs`, posés avant le premier rendu par
 lorderis.dev et de tous les projets (gabarit d'Account-LordEris,
 `reference/footer/` : `lorderis-footer.css` et `assets/img/lorderis-logo.png`
 recopiés tels quels) : logo, ©, GitHub, Discord, Fiverr, BuiltByBit,
-Confidentialité vers la politique de Jobbly et Mon compte. Il reste sombre
-dans les deux thèmes, seule exception aux couleurs de Jobbly.
+Confidentialité vers la politique de Jobbly et Mon compte — le seul lien
+vers la politique en bas de page, sans bloc « Pages légales » au-dessus. Il
+reste sombre dans les deux thèmes, seule exception aux couleurs de Jobbly.
 
 ## Les captures de la présentation
 

@@ -232,7 +232,6 @@ export const STRINGS = {
     'footer.copy': '© 2026 LordEris. Développeur full-stack & Minecraft.',
     'footer.privacy': 'Confidentialité',
     'footer.account': 'Mon compte',
-    'footer.legal': 'Pages légales',
   },
   en: {
     'title.app': 'Jobbly — my job offers',
@@ -454,7 +453,6 @@ export const STRINGS = {
     'footer.copy': '© 2026 LordEris. Full-stack & Minecraft developer.',
     'footer.privacy': 'Privacy policy',
     'footer.account': 'My account',
-    'footer.legal': 'Legal pages',
   },
 }
 
