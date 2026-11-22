@@ -392,6 +392,8 @@ export interface RawOffer {
   contract: string;
   /** Identifiant France Travail : deux identifiants différents, deux offres. */
   ftId: string;
+  /** La rémunération annoncée par la source, ou `null` si elle n'en dit rien. */
+  salary: Salary | null;
 }
 
 const MAX_TITLE = 200;
@@ -402,7 +404,7 @@ const MAX_SUMMARY = 12_000;
 
 function offer(
   source: SourceName,
-  f: { title: unknown; company: unknown; location: unknown; url: unknown; date: unknown; expires?: unknown; summary: unknown; contract: unknown; ftId?: string },
+  f: { title: unknown; company: unknown; location: unknown; url: unknown; date: unknown; expires?: unknown; summary: unknown; contract: unknown; ftId?: string; salary?: Salary | null },
   fallbackLocation: string,
 ): RawOffer | null {
   const title = cleanText(f.title, MAX_TITLE);
@@ -418,7 +420,122 @@ function offer(
     summary: cleanLongText(f.summary, MAX_SUMMARY),
     contract: cleanText(f.contract, MAX_CONTRACT),
     ftId: f.ftId ?? '',
+    salary: f.salary ?? null,
   };
+}
+
+// ── La rémunération ──────────────────────────────────────────────────────────
+//
+// Chaque source la dit à sa façon : France Travail en phrase (« Mensuel de
+// 1801.80 Euros à 2200.00 Euros sur 12 mois »), Jooble et Careerjet en texte
+// libre (« 30 000 € par an », « 12,50 €/heure »), Adzuna et Careerjet en
+// nombres. Tout est ramené à des euros PAR MOIS — l'unité du champ des
+// réglages — pour pouvoir comparer :
+//   · heure × 151,67 (la durée légale mensuelle), jour × 21,67,
+//     semaine × 4,33, année ÷ 12 ;
+//   · sans unité dite, l'ordre de grandeur la donne (moins de 100 €,
+//     l'heure ; moins de 10 000 €, le mois ; au-delà, l'année) ;
+//   · un montant hors de 400 à 50 000 € par mois n'est pas gardé : c'est une
+//     lecture fausse plus souvent qu'un salaire.
+// Brut ou net, la source ne le dit presque jamais : le montant est comparé
+// tel qu'elle le donne, et le site le dit. Ce qui ne se lit pas reste « non
+// indiqué », jamais zéro : une donnée absente n'est pas défavorable.
+
+export interface Salary {
+  /** Le texte de la source, nettoyé ; vide quand elle ne donne que des nombres. */
+  label: string;
+  /** Euros par mois, arrondis ; `null` si la borne n'est pas dite. */
+  min: number | null;
+  max: number | null;
+}
+
+export type SalaryPeriod = 'hour' | 'day' | 'week' | 'month' | 'year';
+
+const MAX_SALARY_LABEL = 120;
+export const SALARY_MONTH_MIN = 400;
+export const SALARY_MONTH_MAX = 50_000;
+const PER_MONTH: Record<SalaryPeriod, number> = { hour: 151.67, day: 21.67, week: 4.33, month: 1, year: 1 / 12 };
+
+/** Les codes `salary_type` de Careerjet. */
+const CAREERJET_PERIODS: Record<string, SalaryPeriod> = { H: 'hour', D: 'day', W: 'week', M: 'month', Y: 'year' };
+
+/** Un montant ramené au mois, ou `null` s'il n'est pas plausible. */
+export function toMonthly(amount: number, period: SalaryPeriod): number | null {
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  const m = Math.round(amount * PER_MONTH[period]);
+  return m >= SALARY_MONTH_MIN && m <= SALARY_MONTH_MAX ? m : null;
+}
+
+function guessPeriod(amount: number): SalaryPeriod {
+  return amount < 100 ? 'hour' : amount < 10_000 ? 'month' : 'year';
+}
+
+function salaryOf(label: string, min: number | null, max: number | null): Salary | null {
+  if (min !== null && max !== null && max < min) [min, max] = [max, min];
+  if (min !== null && max === min) max = null;
+  if (min === null && max !== null) [min, max] = [max, null];
+  if (!label && min === null) return null;
+  return { label, min, max };
+}
+
+/** Des nombres (Adzuna, Careerjet) ; une autre devise que l'euro n'est pas gardée. */
+export function salaryFromNumbers(minV: unknown, maxV: unknown, period: SalaryPeriod | null, currency: unknown, label: unknown): Salary | null {
+  if (typeof currency === 'string' && currency.trim() && currency.trim().toUpperCase() !== 'EUR') return null;
+  const n = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && /^\d+(\.\d+)?$/.test(v.trim()) ? Number(v) : NaN);
+  const a = n(minV);
+  const b = n(maxV);
+  if (!(a > 0) && !(b > 0)) return null;
+  const p = period ?? guessPeriod(a > 0 ? a : b);
+  return salaryOf(cleanText(label, MAX_SALARY_LABEL), a > 0 ? toMonthly(a, p) : null, b > 0 ? toMonthly(b, p) : null);
+}
+
+/**
+ * Minuscules sans accent, espaces insécables ramenés à l'espace. Par codes
+ * et sans échappement Unicode : le canal de déploiement des fonctions les
+ * décode, et une classe ainsi écrite arriverait en caractères bruts.
+ */
+function salaryFold(s: string): string {
+  let out = '';
+  for (const ch of s.normalize('NFD').toLowerCase()) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (c >= 0x300 && c <= 0x36f) continue;
+    out += c === 0xa0 || c === 0x202f || c === 0x2009 ? ' ' : ch;
+  }
+  return out;
+}
+
+/**
+ * Un texte de rémunération (« Mensuel de 1801.80 Euros à 2200.00 Euros sur
+ * 12 mois », « 30 000 € - 35 000 € par an », « 12,50 €/h », « 28k€ »). Sans
+ * montant en euros, seul le texte est gardé (« Selon profil »).
+ */
+export function salaryFromText(v: unknown): Salary | null {
+  const label = cleanText(v, MAX_SALARY_LABEL);
+  if (!label) return null;
+  let s = salaryFold(label)
+    // « sur 12 mois » dit le nombre de versements, pas un montant.
+    .replace(/sur \d{1,2} ?mois/g, ' ')
+    // Une durée de travail (« 35h », « 39 heures ») n'est pas un montant.
+    .replace(/\b\d{1,2} ?(h|heures?)(\/| par )?(sem(aine)?|hebdo)\w*/g, ' ');
+  if (!/€|\beur\b|\beuros?\b|\d ?k\b/.test(s)) return salaryOf(label, null, null);
+  let period: SalaryPeriod | null = null;
+  if (/horaire|heure|\/ ?h\b|\bh\b|de l'heure/.test(s)) period = 'hour';
+  else if (/journalier|par jour|\/ ?jour|\bjour\b/.test(s)) period = 'day';
+  else if (/hebdo|semaine/.test(s)) period = 'week';
+  else if (/mensuel|mois|month/.test(s)) period = 'month';
+  else if (/annuel|\ban\b|annee|year|\/ ?an\b/.test(s)) period = 'year';
+  s = s.replace(/(\d)[ .](?=\d{3}\b)/g, '$1');
+  const amounts: number[] = [];
+  for (const m of s.matchAll(/(\d+)(?:[.,](\d{1,2}))?(?!\d)\s*(k\b)?/g)) {
+    let a = Number(m[1] + (m[2] ? '.' + m[2] : ''));
+    if (m[3]) a *= 1000;
+    if (a > 0) amounts.push(a);
+    if (amounts.length === 2) break;
+  }
+  if (!amounts.length) return salaryOf(label, null, null);
+  const p = period ?? guessPeriod(amounts[0]);
+  const [lo, hi] = amounts.map((a) => toMonthly(a, p));
+  return salaryOf(label, lo ?? null, hi ?? null);
 }
 
 const get = (o: unknown, ...path: string[]): unknown => {
@@ -460,6 +577,7 @@ export function parseFranceTravail(json: unknown, city: string): RawOffer[] | nu
         summary: o.description,
         contract: o.typeContratLibelle,
         ftId: id,
+        salary: salaryFromText(firstText(get(o, 'salaire', 'libelle'), get(o, 'salaire', 'commentaire'))),
       },
       city,
     );
@@ -543,7 +661,7 @@ export function parseJooble(json: unknown, city: string, keyword: string): RawOf
     if (!isObject(o)) continue;
     const r = offer(
       'Jooble',
-      { title: o.title, company: o.company, location: o.location, url: o.link, date: o.updated, summary: o.snippet, contract: o.type },
+      { title: o.title, company: o.company, location: o.location, url: o.link, date: o.updated, summary: o.snippet, contract: o.type, salary: salaryFromText(o.salary) },
       city,
     );
     if (r && relevant(r.title, r.summary, [keyword])) out.push(r);
@@ -562,7 +680,16 @@ export function parseCareerjet(json: unknown, city: string): RawOffer[] | null {
     if (!isObject(o)) continue;
     const r = offer(
       'Careerjet',
-      { title: o.title, company: o.company, location: o.locations, url: o.url, date: o.date, summary: o.description, contract: o.contract_type },
+      {
+        title: o.title,
+        company: o.company,
+        location: o.locations,
+        url: o.url,
+        date: o.date,
+        summary: o.description,
+        contract: o.contract_type,
+        salary: salaryFromNumbers(o.salary_min, o.salary_max, CAREERJET_PERIODS[String(o.salary_type)] ?? null, o.salary_currency_code, o.salary) ?? salaryFromText(o.salary),
+      },
       city,
     );
     if (r) out.push(r);
@@ -594,6 +721,8 @@ export function parseAdzuna(json: unknown, city: string): RawOffer[] | null {
         date: o.created,
         summary: o.description,
         contract: firstText(o.contract_type, o.contract_time),
+        // Adzuna estime un salaire quand l'annonce n'en donne pas : une estimation n'est pas une annonce.
+        salary: o.salary_is_predicted === '1' || o.salary_is_predicted === 1 || o.salary_is_predicted === true ? null : salaryFromNumbers(o.salary_min, o.salary_max, 'year', 'EUR', ''),
       },
       city,
     );
@@ -1007,6 +1136,8 @@ export interface OfferData {
   sources: SourceName[];
   summary: string;
   contract: string;
+  /** Absente quand aucune source du groupe n'en dit rien. */
+  salary?: Salary;
   link_dead?: boolean;
 }
 
@@ -1051,6 +1182,9 @@ export function mergeGroup(group: RawOffer[]): MergedOffer {
     summary,
     contract: firstNonEmpty('contract'),
   };
+  // Le premier montant lisible, dans l'ordre de priorité ; à défaut, le premier texte.
+  const salary = group.find((o) => o.salary && o.salary.min !== null)?.salary ?? group.find((o) => o.salary)?.salary;
+  if (salary) data.salary = salary;
   return { idUrl: rep.url, data: fitData(data) };
 }
 

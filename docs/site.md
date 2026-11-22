@@ -47,7 +47,8 @@ Une seule page ; la vue se choisit par l'ancre, si bien que le bouton
   « Voir l'offre sur … » et « Aussi sur : … » (tous les liens, sans doublon),
   la description, puis le statut, « Fausse offre » et « Ignorer et
   supprimer » ;
-- **`#reglages`** : mots-clés, villes avec rayon, types de contrat, puis le
+- **`#reglages`** : mots-clés, villes avec rayon, types de contrat, salaire
+  minimum (€ par mois, facultatif), puis le
   compte (déconnexion de cet appareil, « Gérer mon compte Lorderis »,
   « Supprimer mes données Jobbly ») et « À propos ».
 
@@ -82,7 +83,7 @@ des lignes que le filtre donnerait.
 | Statut | `offers` : `status`, `status_at` (null pour « À traiter »), rien d'autre |
 | Fausse offre | `offers` : `blocked = true` ; l'offre quitte la liste |
 | Ignorer et supprimer | `offers` : `status = 'ignore'`, `status_at` ; retour à la liste |
-| Enregistrer les réglages | `settings` : upsert de `user_id`, `keywords`, `locations`, `contract_types` |
+| Enregistrer les réglages | `settings` : upsert de `user_id`, `keywords`, `locations`, `contract_types`, `min_salary` |
 | Supprimer mes données | `delete_my_data()` ; vrai = le compte Lorderis est parti aussi ; la page le dit, puis déconnecte l'appareil |
 
 Chaque écriture attend la réponse du serveur : réussie, elle se dit dans une

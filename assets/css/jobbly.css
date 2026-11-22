@@ -499,6 +499,8 @@ a { color: var(--accent-ink); }
 .chip-del:hover { background: rgba(127, 127, 127, .18); }
 .add-row { display: flex; gap: 8px; }
 .add-row .field__input { flex: 1; min-width: 0; }
+.salary-row { align-items: center; max-width: 320px; }
+.salary-unit { color: var(--muted); white-space: nowrap; }
 .loc-item {
   display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; align-items: center; gap: 10px;
   padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px;

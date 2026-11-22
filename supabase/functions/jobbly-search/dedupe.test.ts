@@ -27,6 +27,7 @@ function raw(source: SourceName, title: string, f: Partial<RawOffer> = {}): RawO
     summary: f.summary ?? '',
     contract: f.contract ?? '',
     ftId: f.ftId ?? '',
+    salary: f.salary ?? null,
   };
 }
 

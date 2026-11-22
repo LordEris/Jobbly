@@ -34,7 +34,7 @@ export const SOURCES = [
  */
 export const CONTRACT_TYPES = ['CDI', 'CDD', 'MIS', 'SAI', 'DDI', 'DIN', 'TTI', 'LIB', 'FRA', 'CCE', 'REP']
 
-export const LIMITS = { keywords: 10, keywordMin: 2, keywordMax: 60, locations: 5, cityMax: 80, radiusMin: 1, radiusMax: 100 }
+export const LIMITS = { keywords: 10, keywordMin: 2, keywordMax: 60, locations: 5, cityMax: 80, radiusMin: 1, radiusMax: 100, salaryMin: 100, salaryMax: 30000 }
 export const RADII = [5, 10, 20, 30, 50, 75, 100]
 
 const ID_RE = /^[0-9a-f]{32}$/
@@ -133,6 +133,7 @@ export function toOffer(row) {
   names.sort((a, b) => sourceRank(a) - sourceRank(b))
   const status = STATUSES.includes(row.status) ? row.status : ''
   return {
+    salary: readSalary(d.salary),
     id: row.id,
     title: str(d.title, 200) || '—',
     company: str(d.company, 120),
@@ -152,6 +153,65 @@ export function toOffer(row) {
     statusAt: isoOrNull(row.status_at),
     blocked: row.blocked === true,
   }
+}
+
+// ── La rémunération ────────────────────────────────────────────────────────
+//
+// La fonction Edge ramène chaque salaire annoncé à des euros PAR MOIS (heure,
+// jour, semaine, année convertis), tels que la source les donne — brut ou
+// net, elle ne le dit presque jamais. Une offre sans montant lisible n'est
+// jamais cachée par le salaire minimum : une donnée absente n'est pas
+// défavorable, l'écran la dit « non indiquée ».
+
+function salaryAmount(v) {
+  return Number.isInteger(v) && v >= 100 && v <= 100000 ? v : null
+}
+
+/** `data.salary` → `{label, min, max}` (€/mois), ou null s'il n'y a rien à dire. */
+export function readSalary(v) {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null
+  const label = str(v.label, 120)
+  let min = salaryAmount(v.min)
+  let max = salaryAmount(v.max)
+  if (min === null && max !== null) { min = max; max = null }
+  if (min !== null && max !== null && max < min) [min, max] = [max, min]
+  if (max === min) max = null
+  if (!label && min === null) return null
+  return { label, min, max }
+}
+
+/** Le haut de la fourchette annoncée, ou null si aucun montant ne se lit. */
+export function salaryTop(o) {
+  if (!o.salary || o.salary.min === null) return null
+  return o.salary.max ?? o.salary.min
+}
+
+/** Sous le minimum : seulement si le montant annoncé, haut de la fourchette compris, est plus bas. */
+export function salaryUnder(o, minSalary) {
+  if (!Number.isInteger(minSalary)) return false
+  const top = salaryTop(o)
+  return top !== null && top < minSalary
+}
+
+/** « 2 000 – 2 500 € / mois » ; '' si aucun montant. */
+export function formatSalary(salary, lang) {
+  if (!salary || salary.min === null) return ''
+  const nf = new Intl.NumberFormat(lang === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 0 })
+  const range = salary.max === null ? nf.format(salary.min) : `${nf.format(salary.min)} – ${nf.format(salary.max)}`
+  return `${range} €`
+}
+
+/**
+ * Le salaire minimum tapé dans les réglages : `{value}` (null = aucun) ou
+ * `{error}`. Des euros entiers par mois ; espaces et « € » tolérés.
+ */
+export function parseMinSalary(raw) {
+  const s = typeof raw === 'string' ? raw.replace(/[\s\u00a0\u202f€]/g, '') : ''
+  if (!s) return { value: null }
+  if (!/^\d{1,6}$/.test(s)) return { error: 'salary_bad' }
+  const n = Number(s)
+  if (n < LIMITS.salaryMin || n > LIMITS.salaryMax) return { error: 'salary_range' }
+  return { value: n }
 }
 
 /** Alternance ou apprentissage : l'intitulé (règle du script), et le contrat. */
@@ -182,8 +242,16 @@ export function filterOffers(list, f) {
     if (f.alt && !isAlternance(o)) return false
     if (f.source && f.source !== 'all' && !o.sources.some((s) => sourceKey(s) === f.source)) return false
     if (f.onlyNew && !isNew(o, f.lastVisit)) return false
+    if (f.onlySalary && salaryTop(o) === null) return false
+    if (!f.showUnderSalary && salaryUnder(o, f.minSalary)) return false
     return true
   })
+}
+
+/** Combien d'offres le salaire minimum cache, parmi celles que les autres filtres montreraient. */
+export function countUnderSalary(list, f) {
+  if (!Number.isInteger(f.minSalary)) return 0
+  return filterOffers(list, { ...f, showUnderSalary: true }).filter((o) => salaryUnder(o, f.minSalary)).length
 }
 
 /** Le compte de chaque statut, sur ce que la liste peut montrer. */
@@ -333,7 +401,8 @@ export function readSettings(row) {
   const keywords = Array.isArray(row.keywords) ? row.keywords.map(cleanKeyword).filter((k) => k.length >= LIMITS.keywordMin && k.length <= LIMITS.keywordMax).slice(0, LIMITS.keywords) : []
   const locations = Array.isArray(row.locations) ? row.locations.map(cleanLocation).filter(Boolean).slice(0, LIMITS.locations) : []
   const contractTypes = Array.isArray(row.contract_types) ? row.contract_types.filter((c) => CONTRACT_TYPES.includes(c)) : []
-  return { keywords, locations, contractTypes, updatedAt: isoOrNull(row.updated_at) }
+  const minSalary = Number.isInteger(row.min_salary) && row.min_salary >= LIMITS.salaryMin && row.min_salary <= LIMITS.salaryMax ? row.min_salary : null
+  return { keywords, locations, contractTypes, minSalary, updatedAt: isoOrNull(row.updated_at) }
 }
 
 /**
@@ -350,6 +419,7 @@ export function settingsErrors(s) {
   const e = []
   if (!s.keywords.length) e.push('need_keyword')
   if (!s.locations.length) e.push('need_location')
+  if (s.minSalary !== null && s.minSalary !== undefined && !(Number.isInteger(s.minSalary) && s.minSalary >= LIMITS.salaryMin && s.minSalary <= LIMITS.salaryMax)) e.push('salary_range')
   return e
 }
 
@@ -360,6 +430,7 @@ export function settingsRow(userId, s) {
     keywords: s.keywords.slice(0, LIMITS.keywords),
     locations: s.locations.map(cleanLocation).filter(Boolean).slice(0, LIMITS.locations),
     contract_types: s.contractTypes.filter((c) => CONTRACT_TYPES.includes(c)),
+    min_salary: Number.isInteger(s.minSalary) ? s.minSalary : null,
   }
 }
 

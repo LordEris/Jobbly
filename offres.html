@@ -167,6 +167,14 @@
       <p class="muted" data-i18n="settings.contracts_help">Aucun coché = tous les contrats.</p>
       <div class="checks" id="contractList"></div>
 
+      <h2 class="mt"><label for="salaryInput" data-i18n="settings.salary">Salaire minimum</label></h2>
+      <p class="muted" id="salaryHelp" data-i18n="settings.salary_help">En euros par mois. Les offres qui annoncent moins sont masquées ; celles qui n'annoncent rien restent. Les montants sont comparés tels que les annonces les donnent, le plus souvent bruts. Vide = aucun minimum.</p>
+      <div class="add-row salary-row">
+        <input class="field__input" id="salaryInput" type="text" inputmode="numeric" maxlength="9" autocomplete="off" aria-describedby="salaryHelp" data-i18n-attr="placeholder:settings.salary_placeholder">
+        <span class="salary-unit" aria-hidden="true" data-i18n="settings.salary_unit">€ / mois</span>
+      </div>
+      <div id="salaryStatus" role="status" aria-live="polite"></div>
+
       <div id="settingsStatus" role="status" aria-live="polite"></div>
       <div class="save-bar mt">
         <button class="btn btn--primary" id="settingsSave" type="submit" data-i18n="settings.save">Enregistrer</button>

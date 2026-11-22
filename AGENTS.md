@@ -187,8 +187,18 @@ Trois parties, qui ne se mélangent pas :
   vérifie. Une réponse illisible a la sienne (`bad_response`).
 - **Les écritures du site** : un statut met à jour `status` et `status_at`,
   rien d'autre ; « Fausse offre » met `blocked` ; les réglages s'écrivent par
-  un upsert de `user_id`, `keywords`, `locations` et `contract_types`. Jamais
-  `first_seen`, jamais `data` : c'est la fonction qui les écrit.
+  un upsert de `user_id`, `keywords`, `locations`, `contract_types` et
+  `min_salary`. Jamais `first_seen`, jamais `data` : c'est la fonction qui
+  les écrit.
+- **La rémunération est en euros par mois, et une absence n'est pas
+  défavorable.** La fonction lit le salaire de chaque source (phrase de
+  France Travail, texte de Jooble et Careerjet, nombres d'Adzuna et Careerjet,
+  jamais l'estimation d'Adzuna) et le ramène au mois (`salaryFromText`,
+  `salaryFromNumbers`, `rules.ts`) dans `data.salary` `{label, min, max}`. Le
+  salaire minimum des réglages (`min_salary`) ne cache, à l'écran, que les
+  offres dont le haut de la fourchette est plus bas ; une offre qui n'annonce
+  rien reste, « non indiquée », et les offres cachées sont comptées et à un
+  clic. Il ne part chez aucune source.
 - **Une ville sans sa commune est incomplète** : France Travail ne cherche
   qu'avec le code INSEE, La Bonne Alternance qu'avec la position. Les
   réglages les posent depuis l'API Géo ; une ville ajoutée sans commune (API

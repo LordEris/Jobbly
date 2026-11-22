@@ -535,6 +535,34 @@ await withPage('liste, filtres, détail, statut', {}, async (page) => {
   await expectText(n, page, '#viewOffer', /ne mène plus à rien/, 'lien mort dit dans le détail')
 })
 
+await withPage('salaire minimum', { width: 390, project: { settings: { ...DEMO.SETTINGS, min_salary: 1900 } } }, async (page) => {
+  const n = 'salaire'
+  await signIn(page)
+  await page.waitForSelector('#viewOffers:not([hidden]) .card')
+  // L'offre à 1 750 € est cachée ; celles qui n'annoncent rien restent.
+  if (await page.locator(`.card[data-id="${DEMO.OFFERS[2].id}"]`).count()) fail(n, 'offre sous le minimum affichée')
+  else ok(n, 'offre sous le minimum cachée')
+  if (!(await page.locator(`.card[data-id="${DEMO.OFFERS[4].id}"]`).count())) fail(n, 'offre sans montant cachée à tort')
+  await expectText(n, page, '#offersBody', /1 offre\(s\) annoncent moins de 1\s900 € par mois/, 'offres cachées comptées')
+  await expectText(n, page, '#offersMeta', /au moins 1\s900 €/, 'minimum rappelé en tête')
+  await expectText(n, page, `.card[data-id="${DEMO.OFFERS[0].id}"]`, /2\s100 – 2\s400 € par mois/, 'fourchette sur la carte')
+  await expectText(n, page, `.card[data-id="${DEMO.OFFERS[4].id}"]`, /Selon profil/, 'texte sans montant sur la carte')
+  await shot(page, 'salaire-390-light-fr.png')
+  await page.getByRole('button', { name: /Les afficher quand même/ }).click()
+  if (!(await page.locator(`.card[data-id="${DEMO.OFFERS[2].id}"]`).count())) fail(n, '« Les afficher quand même » ne montre rien')
+  else ok(n, 'offres sous le minimum à un clic')
+  await page.getByRole('button', { name: /Salaire indiqué/ }).click()
+  if (await page.locator(`.card[data-id="${DEMO.OFFERS[4].id}"]`).count()) fail(n, 'filtre « Salaire indiqué »')
+  else ok(n, 'filtre « Salaire indiqué »')
+  await page.goto(base + '/offres.html#offre-' + DEMO.OFFERS[0].id)
+  await expectText(n, page, '#viewOffer', /annoncé : « Mensuel de 2100\.00 Euros/, 'texte de la source dans le détail')
+  await page.goto(base + '/offres.html#offre-' + DEMO.OFFERS[1].id)
+  await expectText(n, page, '#viewOffer', /Rémunération non indiquée/, 'absence dite dans le détail')
+  await page.goto(base + '/offres.html#reglages')
+  if ((await page.inputValue('#salaryInput')) !== '1900') fail(n, 'le champ ne reprend pas le minimum enregistré')
+  else ok(n, 'champ des réglages prérempli')
+})
+
 await withPage('statut refusé par le serveur', { project: { patchFailId: DEMO.OFFERS[1].id } }, async (page) => {
   const n = 'statut refusé'
   await signIn(page)
@@ -640,14 +668,20 @@ await withPage('compte sans réglages', { width: 1280, lang: 'en', theme: 'dark'
   await shot(page, 'reglages-commune-1280-dark-en.png')
   await page.locator('#cityResults .suggest button').first().click()
   await page.locator('#contractList input[value="CDI"]').check()
+  await page.fill('#salaryInput', '20,5')
+  await expectText(n, page, '#salaryStatus', /whole euros/, 'salaire minimum mal écrit refusé')
+  await page.click('#settingsSave')
+  await expectText(n, page, '#settingsStatus', /whole euros/, 'salaire mal écrit : rien ne part')
+  if (page.__st.upserts.length) fail(n, 'un salaire mal écrit est parti')
+  await page.fill('#salaryInput', '2 000')
   await page.click('#settingsSave')
   await expectText(n, page, '#settingsStatus', /Settings saved/, 'enregistrés')
   const up = page.__st.upserts.at(-1)
   const b = up && up.body
   const good = b && b.user_id === DEMO.USER.id && JSON.stringify(b.keywords) === '["plombier chauffagiste"]' &&
     JSON.stringify(b.locations) === '[{"city":"Orléans","radius":30,"insee":"45234","lat":47.9029,"lon":1.9097}]' &&
-    JSON.stringify(b.contract_types) === '["CDI"]' && Object.keys(b).sort().join() === 'contract_types,keywords,locations,user_id' && /on_conflict=user_id/.test(up.query)
-  if (!good) fail(n, 'ligne écrite : ' + JSON.stringify(up)); else ok(n, 'ligne au contrat (user_id, keywords, locations, contract_types)')
+    JSON.stringify(b.contract_types) === '["CDI"]' && b.min_salary === 2000 && Object.keys(b).sort().join() === 'contract_types,keywords,locations,min_salary,user_id' && /on_conflict=user_id/.test(up.query)
+  if (!good) fail(n, 'ligne écrite : ' + JSON.stringify(up)); else ok(n, 'ligne au contrat (user_id, keywords, locations, contract_types, min_salary)')
   const geo = page.__st.geo.at(-1) || ''
   if (!/fields=nom%2Ccode%2CcodeDepartement%2Ccentre|fields=nom,code,codeDepartement,centre/.test(geo)) fail(n, 'requête Géo : ' + geo)
   await page.getByRole('button', { name: /Run the search/ }).click()
