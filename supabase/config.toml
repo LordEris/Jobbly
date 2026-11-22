@@ -1,0 +1,15 @@
+# Configuration de la CLI Supabase pour ce dépôt : une seule Edge Function,
+# déployée à la main sur le projet commun aux apps Lorderis.
+#
+#   supabase functions deploy jobbly-search --project-ref imbfggbrkpzbqcouxseo
+#
+# Le schéma `jobbly` ne vit pas ici : il est dans Account-LordEris,
+# supabase/shared-project/jobbly.sql.
+
+project_id = "imbfggbrkpzbqcouxseo"
+
+# La recherche exige un compte : la passerelle refuse une requête sans jeton
+# valide, puis la fonction revérifie l'utilisateur auprès de l'API
+# d'authentification avant de prendre une recherche sur le quota.
+[functions.jobbly-search]
+verify_jwt = true
