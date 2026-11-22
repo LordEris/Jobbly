@@ -1,0 +1,157 @@
+/* ===========================================================
+   presentation.css — gabarit commun des pages de présentation Lorderis
+   Source : Account-LordEris, reference/presentation/presentation.css
+   Mode d'emploi : docs/presentation.md
+   ===========================================================
+
+   Recopié TEL QUEL dans chaque site qui présente son projet : une
+   correction se fait ici d'abord, puis se reporte partout. Ce qui change
+   d'un site à l'autre — couleurs, polices, rayons — ne s'écrit jamais dans
+   ce fichier : il lit les MÊMES variables --lp-* que legal.css (la
+   politique de confidentialité), que chaque site pose déjà pour ses deux
+   thèmes. Un site qui a sa politique au gabarit commun n'a donc presque
+   rien à ajouter.
+
+   Aucune règle ne charge quoi que ce soit (ni police, ni image) et rien ne
+   demande de style en ligne : la page ne demande rien que la CSP du site
+   n'autorise déjà.
+
+   VARIABLES LUES (celles de legal.css, plus cinq) :
+     --lp-font-head, --lp-font-body, --lp-head-lh
+     --lp-ink, --lp-ink-2, --lp-muted, --lp-card, --lp-line, --lp-hover
+     --lp-accent, --lp-accent-ink, --lp-accent-soft, --lp-accent-line
+     --lp-tone-1-bg … --lp-tone-4-bg, --lp-tone-1-ink … --lp-tone-4-ink
+     --lp-blob, --lp-blob-opacity, --lp-radius-sm, --lp-radius-md, --lp-shadow
+     --lp-wrap, --lp-gutter
+   et, propres à la présentation :
+     --lp-page       le fond de la page (les cartes posées sur une bande le
+                     reprennent ; défaut : transparent)
+     --lp-cta-bg     fond du bouton principal (défaut : --lp-accent)
+     --lp-cta-ink    son texte, ≥ 4,5:1 sur ce fond — À POSER : aucun repli
+                     ne peut deviner la couleur lisible sur l'accent du site
+     --lp-cta-hover  son fond survolé ou pressé (défaut : l'accent assombri)
+     --lp-band       fond des bandes qui alternent (défaut : --lp-card)
+
+   LES CAPTURES suivent le thème de la page : chaque capture se donne deux
+   fois, .pres-shot-light et .pres-shot-dark, et seule celle du thème
+   affiché se voit (data-theme sur <html>, posé par le script de thème du
+   site ; à défaut, le thème de l'appareil). En loading="lazy", l'image
+   cachée n'est pas téléchargée.
+*/
+
+.pres-wrap{max-width:var(--lp-wrap,1180px);margin:0 auto;padding:0 var(--lp-gutter,24px);box-sizing:border-box;}
+
+/* ── Héros ─────────────────────────────────────────────────── */
+.pres-hero{position:relative;overflow:hidden;padding:48px 0 40px;}
+.pres-hero .pres-blob{position:absolute;width:520px;height:520px;top:-240px;right:-160px;border-radius:50%;background:var(--lp-blob,var(--lp-accent-soft,#eee));opacity:var(--lp-blob-opacity,.45);pointer-events:none;-webkit-mask:radial-gradient(circle,#000 26%,transparent 70%);mask:radial-gradient(circle,#000 26%,transparent 70%);}
+.pres-hero__in{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr);gap:36px;align-items:center;}
+.pres-hero__text{min-width:0;}
+.pres-icon{display:block;width:72px;height:72px;border-radius:18px;box-shadow:var(--lp-shadow,none);}
+.pres-eyebrow{display:block;margin-top:20px;font-family:var(--lp-font-body,inherit);font-weight:700;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lp-accent-ink,inherit);}
+.pres-hero h1{margin:8px 0 0;font-family:var(--lp-font-head,inherit);font-size:clamp(38px,6vw,64px);line-height:var(--lp-head-lh,1.05);letter-spacing:-.5px;color:var(--lp-ink,inherit);overflow-wrap:break-word;}
+.pres-lead{margin:16px 0 0;max-width:620px;font-size:clamp(18px,1.8vw,21px);line-height:1.5;color:var(--lp-ink-2,inherit);text-wrap:pretty;}
+.pres-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px;}
+.pres-avail{margin:18px 0 0;max-width:620px;font-size:14.5px;line-height:1.55;color:var(--lp-muted,inherit);}
+.pres-avail strong{color:var(--lp-ink,inherit);}
+.pres-hero__shot{margin:0;justify-self:center;width:min(100%,300px);}
+
+/* ── Boutons : le choix se dit par le fond, jamais par une opacité ─ */
+.pres-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;box-sizing:border-box;font-family:var(--lp-font-body,inherit);font-weight:800;font-size:17px;line-height:1.1;text-decoration:none;text-align:center;background:var(--lp-cta-bg,var(--lp-accent,#333));color:var(--lp-cta-ink,#111);border:2px solid transparent;transition:background .15s;}
+.pres-cta:hover,.pres-cta:active{background:var(--lp-cta-hover,color-mix(in srgb,var(--lp-cta-bg,var(--lp-accent,#333)) 84%,#000));}
+.pres-cta:focus-visible,.pres-ghost:focus-visible,.pres-faq summary:focus-visible,.pres-links a:focus-visible{outline:3px solid var(--lp-accent-ink,currentColor);outline-offset:3px;}
+.pres-cta svg{flex:none;}
+.pres-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;box-sizing:border-box;font-family:var(--lp-font-body,inherit);font-weight:700;font-size:16px;text-decoration:none;color:var(--lp-ink,inherit);background:transparent;border:2px solid var(--lp-line,rgba(127,127,127,.4));transition:background .15s;}
+.pres-ghost:hover,.pres-ghost:active{background:var(--lp-hover,rgba(127,127,127,.12));}
+
+/* ── Sections ──────────────────────────────────────────────── */
+.pres-section{padding:56px 0;scroll-margin-top:72px;}
+.pres-section--band{background:var(--lp-band,var(--lp-card,transparent));border-top:1px solid var(--lp-line,rgba(127,127,127,.25));border-bottom:1px solid var(--lp-line,rgba(127,127,127,.25));}
+.pres-section h2{margin:0;font-family:var(--lp-font-head,inherit);font-size:clamp(27px,3.4vw,38px);line-height:var(--lp-head-lh,1.15);letter-spacing:-.3px;color:var(--lp-ink,inherit);overflow-wrap:break-word;}
+.pres-intro{margin:12px 0 0;max-width:680px;font-size:17px;line-height:1.6;color:var(--lp-ink-2,inherit);text-wrap:pretty;}
+.pres-section p a,.pres-section li a{color:var(--lp-accent-ink,inherit);font-weight:700;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1.5px;overflow-wrap:anywhere;}
+
+/* ── Ce que ça fait : des cartes ───────────────────────────── */
+/* Des rangées centrées plutôt qu'une grille : cinq cartes font 3 + 2, et non
+   4 + une orpheline ; quatre font 2 + 2. */
+.pres-features{list-style:none;margin:28px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:16px;}
+.pres-feature{flex:1 1 100%;box-sizing:border-box;background:var(--lp-card,transparent);border:1px solid var(--lp-line,rgba(127,127,127,.25));border-radius:var(--lp-radius-md,18px);padding:22px 22px 20px;box-shadow:var(--lp-shadow,none);min-width:0;}
+.pres-feature h3{margin:14px 0 6px;font-family:var(--lp-font-head,inherit);font-size:19px;line-height:1.25;color:var(--lp-ink,inherit);}
+.pres-feature p{margin:0;font-size:15.5px;line-height:1.55;color:var(--lp-ink-2,inherit);text-wrap:pretty;}
+.pres-i{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--lp-tone-1-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-1-ink,var(--lp-accent-ink,inherit));}
+.pres-i.tone-2{background:var(--lp-tone-2-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-2-ink,var(--lp-accent-ink,inherit));}
+.pres-i.tone-3{background:var(--lp-tone-3-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-3-ink,var(--lp-accent-ink,inherit));}
+.pres-i.tone-4{background:var(--lp-tone-4-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-4-ink,var(--lp-accent-ink,inherit));}
+
+/* Sur une bande, les cartes reprennent le fond de la page : sinon elles s'y fondraient. */
+.pres-section--band .pres-feature,.pres-section--band .pres-steps li,.pres-section--band .pres-points li{background:var(--lp-page,transparent);}
+
+/* ── Comment ça marche : trois étapes numérotées ───────────── */
+.pres-steps{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;counter-reset:pres-step;}
+.pres-steps li{position:relative;padding:20px 22px 20px 78px;min-height:56px;background:var(--lp-card,transparent);border:1px solid var(--lp-line,rgba(127,127,127,.25));border-radius:var(--lp-radius-md,18px);counter-increment:pres-step;min-width:0;}
+.pres-steps li::before{content:counter(pres-step);position:absolute;left:20px;top:20px;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:800 20px/1 var(--lp-font-body,inherit);background:var(--lp-accent-soft,transparent);color:var(--lp-accent-ink,inherit);}
+.pres-steps h3{margin:0 0 6px;font-family:var(--lp-font-head,inherit);font-size:19px;line-height:1.25;color:var(--lp-ink,inherit);}
+.pres-steps p{margin:0;font-size:15.5px;line-height:1.55;color:var(--lp-ink-2,inherit);text-wrap:pretty;}
+
+/* ── En images : les captures, au thème de la page ─────────── */
+.pres-shots{list-style:none;margin:28px 0 0;padding:4px 2px 16px;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,74%);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;}
+.pres-shots > li{scroll-snap-align:center;min-width:0;}
+.pres-shot{margin:0;}
+.pres-shot img,.pres-hero__shot img{display:block;width:100%;height:auto;border-radius:24px;border:1px solid var(--lp-line,rgba(127,127,127,.3));box-shadow:var(--lp-shadow,none);background:var(--lp-card,transparent);}
+.pres-shot figcaption{margin-top:12px;font-size:14.5px;line-height:1.45;color:var(--lp-ink-2,inherit);text-align:center;text-wrap:pretty;}
+.pres-shot figcaption strong{display:block;color:var(--lp-ink,inherit);}
+.pres-shots-note{margin:4px 0 0;font-size:13.5px;color:var(--lp-muted,inherit);}
+.pres-shot-dark{display:none !important;}
+:root[data-theme="dark"] .pres-shot-light{display:none !important;}
+:root[data-theme="dark"] .pres-shot-dark{display:block !important;}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .pres-shot-light{display:none !important;}
+  :root:not([data-theme]) .pres-shot-dark{display:block !important;}
+}
+
+/* ── Les données : des points courts, puis le renvoi ───────── */
+.pres-points{list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;}
+.pres-points li{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;background:var(--lp-card,transparent);border:1px solid var(--lp-line,rgba(127,127,127,.25));border-radius:var(--lp-radius-sm,12px);font-size:15.5px;line-height:1.55;color:var(--lp-ink-2,inherit);min-width:0;}
+.pres-points li .pres-i{width:36px;height:36px;border-radius:10px;flex-shrink:0;}
+.pres-points li strong{color:var(--lp-ink,inherit);}
+.pres-more{margin:18px 0 0;font-size:15.5px;color:var(--lp-ink-2,inherit);}
+
+/* ── Questions fréquentes : <details>, sans script ─────────── */
+.pres-faq{margin:20px 0 0;max-width:820px;border-top:1px solid var(--lp-line,rgba(127,127,127,.3));}
+.pres-faq details{border-bottom:1px solid var(--lp-line,rgba(127,127,127,.3));}
+.pres-faq summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:12px 4px;cursor:pointer;list-style:none;font-family:var(--lp-font-body,inherit);font-weight:700;font-size:17px;line-height:1.35;color:var(--lp-ink,inherit);border-radius:8px;}
+.pres-faq summary::-webkit-details-marker{display:none;}
+.pres-faq summary:hover{background:var(--lp-hover,rgba(127,127,127,.1));}
+/* Le signe change avec l'état : ouvert ou fermé ne se dit pas par la seule couleur. */
+.pres-faq summary::after{content:"+";flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:var(--lp-accent-soft,transparent);color:var(--lp-accent-ink,inherit);}
+.pres-faq details[open] summary::after{content:"\2212";}
+.pres-faq details p{margin:0 4px 18px;font-size:15.5px;line-height:1.6;color:var(--lp-ink-2,inherit);text-wrap:pretty;}
+
+/* ── Dernier appel ─────────────────────────────────────────── */
+.pres-final{text-align:center;}
+.pres-final .pres-actions{justify-content:center;}
+.pres-final .pres-intro{margin-left:auto;margin-right:auto;}
+
+/* ── Pied : les pages légales, puis la ligne Lorderis du kit ─ */
+.pres-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;max-width:var(--lp-wrap,1180px);margin:0 auto;padding:24px var(--lp-gutter,24px) 4px;box-sizing:border-box;font-size:14px;}
+.pres-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--lp-accent-ink,inherit);font-weight:600;text-decoration:underline;text-underline-offset:2px;}
+
+/* ── Grandes largeurs ──────────────────────────────────────── */
+@media (min-width:620px){
+  .pres-feature{flex:0 1 calc((100% - 16px) / 2);}
+}
+@media (min-width:760px){
+  .pres-steps{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .pres-steps li{padding:76px 22px 22px;}
+  .pres-points{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (min-width:900px){
+  .pres-hero{padding:72px 0 56px;}
+  .pres-hero__in{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:56px;}
+  .pres-feature{flex-basis:calc((100% - 32px) / 3);}
+  .pres-features:has(> li:nth-child(4):last-child) > .pres-feature{flex-basis:calc((100% - 16px) / 2);}
+  .pres-shots{grid-auto-flow:row;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));overflow:visible;padding:0;}
+  .pres-section{padding:80px 0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .pres-cta,.pres-ghost{transition:none;}
+}

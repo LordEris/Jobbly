@@ -1,0 +1,97 @@
+/* lorderis-toggles.css — les deux boutons ronds de lorderis.dev (thème et
+   langue), communs à toutes les pages web des projets Lorderis.
+   Source : Account-LordEris, reference/toggles/. Recopié TEL QUEL dans chaque
+   projet ; une correction se fait là-bas d'abord.
+
+   La forme et le comportement sont ceux du portfolio : un disque plein de
+   38 px, l'icône du thème CHOISI (écran, soleil, lune), la langue VERS
+   laquelle on bascule. La couleur est celle du projet : il surcharge
+   --lorderis-toggle-bg et --lorderis-toggle-fg dans sa propre feuille,
+   chargée après celle-ci, pour ses deux thèmes. Le défaut est le violet du
+   portfolio. */
+
+:root {
+  --lorderis-toggle-bg: #7c3aed;
+  --lorderis-toggle-fg: #ffffff;
+}
+
+.lorderis-toggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Le groupe est masqué (hidden) tant que le script du projet n'a pas câblé
+   les deux boutons : sans cette règle, le display ci-dessus l'emporterait
+   sur l'attribut, et deux boutons morts s'afficheraient. */
+.lorderis-toggles[hidden] { display: none; }
+
+/* Le sélecteur pèse (0,2,1) — l'élément et la classe deux fois —, sans
+   !important : une page qui remet ses boutons à zéro (`.legal-page button
+   { background: none }`, (0,1,1), ou `.bar .btn`, (0,2,0)) effaçait sinon le
+   disque, quel que soit l'ordre des feuilles. */
+button.lorderis-theme-toggle.lorderis-theme-toggle,
+button.lorderis-lang-toggle.lorderis-lang-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--lorderis-toggle-bg);
+  color: var(--lorderis-toggle-fg);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+/* La zone tactile fait 44 px (règle commune des applis), le disque 38. */
+.lorderis-theme-toggle::before,
+.lorderis-lang-toggle::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+}
+
+button.lorderis-lang-toggle.lorderis-lang-toggle {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.lorderis-theme-toggle:hover,
+.lorderis-lang-toggle:hover { transform: scale(1.1); }
+
+.lorderis-theme-toggle:focus-visible,
+.lorderis-lang-toggle:focus-visible {
+  outline: 2px solid var(--lorderis-toggle-bg);
+  outline-offset: 3px;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lorderis-theme-toggle,
+  .lorderis-lang-toggle { transition: none; }
+  .lorderis-theme-toggle:hover,
+  .lorderis-lang-toggle:hover { transform: none; }
+}
+
+/* L'icône montre la position CHOISIE (data-theme-pref, posé sur <html> avant
+   le premier rendu), pas le thème effectif : en « Système », c'est l'écran. */
+.lorderis-theme-toggle svg { display: none; }
+.lorderis-theme-toggle .icon-system,
+[data-theme-pref="light"] .lorderis-theme-toggle .icon-sun,
+[data-theme-pref="dark"] .lorderis-theme-toggle .icon-moon { display: block; }
+[data-theme-pref="light"] .lorderis-theme-toggle .icon-system,
+[data-theme-pref="dark"] .lorderis-theme-toggle .icon-system { display: none; }
+
+/* Le bouton de langue affiche la langue vers laquelle on bascule. */
+.lorderis-lang-toggle .lt-to-fr { display: none; }
+html[lang|="en"] .lorderis-lang-toggle .lt-to-en { display: none; }
+html[lang|="en"] .lorderis-lang-toggle .lt-to-fr { display: inline; }

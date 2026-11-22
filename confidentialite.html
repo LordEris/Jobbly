@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<!--
+  La politique de confidentialité de Jobbly, au gabarit commun des
+  politiques Lorderis (Account-LordEris, reference/privacy/, mode d'emploi
+  dans docs/politique-de-confidentialite.md là-bas) : legal.css et
+  toc-spy.js recopiés tels quels ; les variables --lp-* posées dans
+  jobbly.css pour les deux thèmes. Les deux langues sont dans la page, la
+  langue affichée masque l'autre bloc ; les ancres anglaises sont préfixées
+  « en- ». ELLE DIT CE QUE FAIT LE CODE (le site, la fonction jobbly-search,
+  le SQL de jobbly dans Account-LordEris) : un changement de l'un se reporte
+  ici, dans la même pull request.
+-->
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jobbly — Politique de confidentialité</title>
+<meta name="pp-title-fr" content="Jobbly — Politique de confidentialité" />
+<meta name="pp-title-en" content="Jobbly — Privacy Policy" />
+<meta name="description" content="Ce que Jobbly garde, à qui partent tes mots-clés et tes villes pour chercher les offres, combien de temps tout est gardé, et comment l'effacer." />
+<meta name="color-scheme" content="light dark" />
+<script src="/assets/js/theme-init.js"></script>
+<script src="/assets/js/prefs.js"></script>
+<link rel="stylesheet" href="/assets/css/lorderis-footer.css" />
+<link rel="stylesheet" href="/assets/css/lorderis-toggles.css" />
+<link rel="stylesheet" href="/assets/css/legal.css" />
+<link rel="stylesheet" href="/assets/css/jobbly.css" />
+<link rel="icon" href="/assets/img/icone.svg" type="image/svg+xml" />
+</head>
+<body>
+<header class="jb-bar">
+  <div class="jb-bar__in">
+    <a class="jb-brand" href="/?presentation"><img src="/assets/img/icone.svg" alt="" width="32" height="32" /><span>Jobbly</span></a>
+    <div class="lorderis-toggles" hidden>
+      <button type="button" class="lorderis-theme-toggle" aria-label="Thème : Système. Passer à Clair" title="Thème : Système. Passer à Clair">
+        <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button type="button" class="lorderis-lang-toggle" aria-label="Passer en anglais (EN)" title="Passer en anglais (EN)">
+        <span class="lt-to-en" lang="en" aria-hidden="true">EN</span>
+        <span class="lt-to-fr" lang="fr" aria-hidden="true">FR</span>
+      </button>
+    </div>
+  </div>
+</header>
+<main id="contenu" tabindex="-1">
+<div data-lang-block="fr" lang="fr">
+<section class="legal-hero">
+  <span class="blob b1" aria-hidden="true"></span>
+  <div class="wrap legal-wrap inner">
+    <span class="eyebrow legal-eyebrow">Légal</span>
+    <h1>Politique de confidentialité</h1>
+    <p class="lead legal-lead">Ce que Jobbly garde quand tu cherches un emploi, à qui part quoi pour chercher les offres, et comment tout effacer.</p>
+    <span class="updated"><span class="dot"></span>Dernière mise à jour : 22 novembre 2026</span>
+  </div>
+</section>
+<section class="legal-section-wrap">
+  <div class="wrap legal-wrap legal-grid">
+    <aside class="toc">
+      <p class="toc-title">Sommaire</p>
+      <ol>
+        <li><a href="#responsable"><span class="tn">01</span><span>Qui traite tes données</span></a></li>
+        <li><a href="#donnees"><span class="tn">02</span><span>Les données que nous traitons</span></a></li>
+        <li><a href="#finalites"><span class="tn">03</span><span>Pourquoi nous les traitons</span></a></li>
+        <li><a href="#bases"><span class="tn">04</span><span>Bases légales</span></a></li>
+        <li><a href="#partage"><span class="tn">05</span><span>Partage avec des tiers</span></a></li>
+        <li><a href="#transferts"><span class="tn">06</span><span>Transferts hors UE</span></a></li>
+        <li><a href="#audience"><span class="tn">07</span><span>Mesure d'audience &amp; diagnostic</span></a></li>
+        <li><a href="#recherches"><span class="tn">08</span><span>Les recherches, les doublons et les liens morts</span></a></li>
+        <li><a href="#conservation"><span class="tn">09</span><span>Conservation</span></a></li>
+        <li><a href="#securite"><span class="tn">10</span><span>Sécurité</span></a></li>
+        <li><a href="#cookies"><span class="tn">11</span><span>Cookies &amp; stockage local</span></a></li>
+        <li><a href="#droits"><span class="tn">12</span><span>Tes droits</span></a></li>
+        <li><a href="#mineurs"><span class="tn">13</span><span>Les mineurs</span></a></li>
+        <li><a href="#modifications"><span class="tn">14</span><span>Modifications</span></a></li>
+        <li><a href="#contact"><span class="tn">15</span><span>Nous contacter</span></a></li>
+      </ol>
+    </aside>
+    <article class="legal-body">
+      <section id="responsable">
+        <h2><span class="hn">01</span><span>Qui traite tes données</span></h2>
+        <p>Jobbly est édité par Lorderis, à titre personnel. Lorderis est le responsable du traitement au sens du RGPD (règlement UE 2016/679), joignable à <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>.</p>
+        <p>Ton compte Jobbly est un compte Lorderis, commun à toutes nos apps. Pour ce qui concerne ce compte — ton identité, ton adresse e-mail et ton mot de passe —, c'est la <a href="https://account.lorderis.dev/confidentialite.html">politique de confidentialité du compte Lorderis</a> qui s'applique. Les données que tu confies à Jobbly restent régies par la présente politique.</p>
+        <p>Une question sur cette politique ou sur tes données ? Écris-nous à <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>. Tu trouveras toutes nos coordonnées au point 15.</p>
+      </section>
+      <section id="donnees">
+        <h2><span class="hn">02</span><span>Les données que nous traitons</span></h2>
+        <p>Jobbly ne garde que ce qu'il faut pour chercher des offres à ta place et suivre tes candidatures.</p>
+        <div class="data-cards">
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><h3>Compte</h3></div>
+            <p>Ton compte Lorderis : adresse e-mail et identifiant de connexion, ou ton compte Google si tu te connectes avec lui. Jobbly s'en sert pour savoir quelles données sont les tiennes.</p>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21c-4-2.5-7-5.5-7-10a7 7 0 0 1 14 0c0 4.5-3 7.5-7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg></span><h3>Réglages</h3></div>
+            <ul><li>Tes mots-clés (dix au plus)</li><li>Tes villes (cinq au plus), avec le rayon de recherche, le code de la commune et la position de son centre</li><li>Les types de contrat que tu choisis</li></ul>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><h3>Offres et candidatures</h3></div>
+            <p>Les offres trouvées pour toi — intitulé, entreprise, lieu, contrat, dates, description, liens et sources, tels que les sites d'emploi les publient —, avec les dates où elles ont été vues, ton statut de candidature et sa date, et la marque « Fausse offre ».</p>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="m7 14 3-3 3 2 4-5"/></svg></span><h3>Données techniques</h3></div>
+            <ul><li>Le nombre de recherches lancées par jour, pour le quota</li><li>Les journaux techniques du serveur (adresse IP comprise), voir le point 09</li></ul>
+          </div>
+        </div>
+      </section>
+      <section id="finalites">
+        <h2><span class="hn">03</span><span>Pourquoi nous les traitons</span></h2>
+        <ul>
+          <li><strong>Chercher les offres</strong> qui correspondent à tes réglages, sur cinq sites d'emploi, quand tu le demandes.</li>
+          <li><strong>Les rendre lisibles</strong> : fusionner les doublons, écarter les annonces expirées et les liens morts.</li>
+          <li><strong>Suivre tes candidatures</strong> : garder tes statuts et les offres que tu suis, sur tous tes appareils.</li>
+          <li><strong>Protéger le service</strong> : limiter le nombre de recherches par compte et par jour, pour que les clés d'accès aux sites d'emploi servent à tout le monde.</li>
+        </ul>
+      </section>
+      <section id="bases">
+        <h2><span class="hn">04</span><span>Bases légales</span></h2>
+        <p>Conformément au RGPD, chaque traitement repose sur une base légale :</p>
+        <ul>
+          <li><strong>L'exécution du contrat</strong> (art. 6.1.b) — tes réglages, tes offres, tes statuts : c'est le service que tu demandes en créant ton compte et en lançant une recherche.</li>
+          <li><strong>Notre intérêt légitime</strong> (art. 6.1.f) — le quota de recherches, le cache des vérifications de liens et les journaux techniques, qui protègent le service et le font tenir.</li>
+        </ul>
+      </section>
+      <section id="partage">
+        <h2><span class="hn">05</span><span>Partage avec des tiers</span></h2>
+        <ul>
+          <li><strong>Supabase</strong> — héberge la base de données, l'authentification et la fonction qui lance les recherches (point 06).</li>
+          <li><strong>Les cinq sites d'emploi</strong> — France Travail, La Bonne Alternance, Jooble, Careerjet et Adzuna — reçoivent, à chaque recherche, tes mots-clés et tes villes (nom, code de commune, position du centre, rayon), et France Travail les types de contrat choisis. La demande part de notre serveur, avec nos propres clés d'accès : <strong>jamais ton adresse e-mail ni ton identifiant</strong>.</li>
+          <li><strong>Les sites des annonces</strong> — notre serveur ouvre le lien de chaque offre pour vérifier qu'il mène encore à l'annonce. Cette vérification ne porte aucune donnée te concernant.</li>
+          <li><strong>L'API Géo de l'État</strong> (geo.api.gouv.fr) — reçoit le nom de commune que tu tapes dans les réglages, depuis ton navigateur, donc avec ton adresse IP.</li>
+          <li><strong>Google</strong> — sur l'écran de connexion, si la connexion avec Google est activée, la page charge le bouton de Google, qui reçoit ton adresse IP et peut lire ses propres cookies ; si tu choisis « Continuer avec Google », Google confirme ton identité au compte Lorderis.</li>
+          <li><strong>Les sites où tu ouvres une offre</strong> — en cliquant sur « Voir l'offre », tu quittes Jobbly pour le site de l'annonce, qui applique sa propre politique.</li>
+        </ul>
+        <div class="callout">
+          <span class="co-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 7.5 8 10 4.6-2.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <p><strong>Jamais de revente.</strong> Nous ne vendons ni ne louons tes données à des annonceurs ou à des courtiers en données. Point.</p>
+        </div>
+        <p>Le détail des transferts hors de l'Union européenne, et les garanties qui les encadrent, font l'objet du point 06.</p>
+      </section>
+      <section id="transferts">
+        <h2><span class="hn">06</span><span>Transferts hors UE</span></h2>
+        <ul>
+          <li><strong>Supabase</strong> héberge la base de données et le service d'authentification en <strong>France</strong> (région de Paris, eu-west-3). C'est notre sous-traitant au sens de l'article 28 du RGPD, sous accord de traitement des données.</li>
+          <li><strong>Google</strong> (Google LLC), si tu te connectes avec lui, est établi aux <strong>États-Unis</strong>.</li>
+          <li><strong>Jooble, Careerjet et Adzuna</strong> sont des sociétés établies hors de France ; tes mots-clés et tes villes leur parviennent à chaque recherche.</li>
+        </ul>
+        <p class="note">À compléter : le pays où Jooble, Careerjet et Adzuna traitent les recherches, et le cadre de ces transferts, n'ont pas encore été vérifiés auprès d'eux.</p>
+        <p>Ces transferts vers les États-Unis sont encadrés par les garanties du chapitre V du RGPD : clauses contractuelles types et, le cas échéant, décision d'adéquation applicable.</p>
+      </section>
+      <section id="audience">
+        <h2><span class="hn">07</span><span>Mesure d'audience &amp; diagnostic</span></h2>
+        <p class="na"><strong>Sans objet :</strong> Jobbly ne mesure pas son audience : ni statistiques de visite dans la page, ni outil d'analyse, ni publicité.</p>
+        <h3>Rapports de plantage</h3>
+        <p class="na"><strong>Sans objet :</strong> le site de Jobbly n'envoie aucun rapport d'erreur à un service tiers.</p>
+      </section>
+      <section id="recherches">
+        <h2><span class="hn">08</span><span>Les recherches, les doublons et les liens morts</span></h2>
+        <p>Une recherche part quand tu appuies sur « Actualiser », jamais d'elle-même. Notre serveur (une fonction de Supabase) interroge les cinq sites avec tes réglages, en parallèle, une minute au plus.</p>
+        <p>Il <strong>fusionne les doublons</strong> : la même offre publiée sur plusieurs sites — même adresse, ou même intitulé, même entreprise et même lieu — n'en fait qu'une, avec tous ses liens.</p>
+        <p>Il <strong>vérifie les liens</strong> : il ouvre chaque lien et regarde si l'annonce existe encore (page introuvable, offre expirée, renvoi vers l'accueil du site). Un lien qu'il ne peut pas juger est gardé. Le résultat est rangé dans un cache commun à tous les comptes, qui ne garde qu'une <strong>empreinte</strong> de l'adresse (SHA-256) et un verdict, sans rien qui dise qui l'a cherchée.</p>
+        <p>Il range ensuite les offres avec ton compte : une offre qui n'est plus publiée est marquée comme telle ; une offre dont le lien est mort est retirée, sauf si tu la suis (un statut ou « Fausse offre »). Ton statut, sa date et la date où l'offre a été vue la première fois ne bougent jamais.</p>
+        <p>Chaque compte peut lancer <strong>30 recherches par jour</strong> ; le service entier, 2 000. Ce compteur est rangé à part, sans lien avec ton compte.</p>
+      </section>
+      <section id="conservation">
+        <h2><span class="hn">09</span><span>Conservation</span></h2>
+        <p>Tes réglages, tes offres et tes statuts sont gardés tant que tu utilises Jobbly. Ils sont effacés par « Supprimer mes données Jobbly » (dans les réglages de l'appli), ou avec ton compte Lorderis.</p>
+        <p>Chaque nuit, une tâche efface les offres qui ont disparu des sites depuis plus de <strong>30 jours</strong>, sauf celles qui portent un statut ou la marque « Fausse offre ». Une offre dont le lien est mort et que tu ne suis pas est retirée dès la recherche qui le constate.</p>
+        <p>Le compteur de recherches est effacé au <strong>surlendemain</strong>. Le cache des vérifications de liens garde chaque verdict <strong>30 jours</strong> au plus.</p>
+        <p>Ton compte Lorderis (e-mail et identifiant de connexion) n’est effacé que si aucune autre de nos apps ne s’en sert.</p>
+        <p>Les journaux techniques de Supabase (requêtes à l'API et à la base, avec l'adresse IP) sont gardés <strong>un jour</strong>, la durée de son offre gratuite. Le journal d'audit de l'authentification (inscriptions, connexions, changements de mot de passe, avec l'adresse IP et le navigateur) est aussi écrit dans la base, où aucune tâche ne le purge : il y reste, y compris après la suppression du compte.</p>
+        <p>Le site est hébergé par <strong>IONOS</strong>, qui tient les statistiques de visite du serveur — page demandée, navigateur, système, heure, et l'adresse IP rendue anonyme dès la collecte — et les garde <strong>huit semaines</strong>.</p>
+      </section>
+      <section id="securite">
+        <h2><span class="hn">10</span><span>Sécurité</span></h2>
+        <p>Tout passe en HTTPS. La base refuse de montrer tes réglages et tes offres à un autre compte que le tien (sécurité au niveau des lignes de Supabase), et la page n'y accède qu'avec ta session. Les clés d'accès aux sites d'emploi restent sur notre serveur, jamais dans la page. Le site interdit tout script qui ne vient pas de lui, de la bibliothèque de Supabase (version figée et vérifiée) ou, sur l'écran de connexion seulement, de Google.</p>
+      </section>
+      <section id="cookies">
+        <h2><span class="hn">11</span><span>Cookies &amp; stockage local</span></h2>
+        <p>Jobbly ne pose <strong>aucun cookie</strong>. Ton navigateur garde, pour ce site seulement :</p>
+        <ul>
+          <li>ta session du compte Lorderis (stockage local), pour rester connecté ;</li>
+          <li><code>jobbly:prefs</code> : ta langue et ton thème ;</li>
+          <li><code>jobbly:last-visit</code> : l'identifiant de ton compte et l'heure de ta dernière visite, pour marquer les offres « Nouveau » ;</li>
+          <li><code>jobbly:app-opened</code> : une marque sans contenu, pour que l'adresse du site te mène directement à l'appli ;</li>
+          <li>le temps de l'onglet, une marque qui retient que tu as fermé la proposition de connexion de Google.</li>
+        </ul>
+        <p>La page de l'appli charge la bibliothèque de Supabase depuis <strong>cdn.jsdelivr.net</strong> (qui reçoit ton adresse IP), interroge <strong>geo.api.gouv.fr</strong> quand tu cherches une commune, et, sur l'écran de connexion, <strong>accounts.google.com</strong>. La présentation et cette page ne joignent aucun autre domaine.</p>
+      </section>
+      <section id="droits">
+        <h2><span class="hn">12</span><span>Tes droits</span></h2>
+        <p>Le RGPD te donne un contrôle complet sur tes données. À tout moment, tu peux exercer les droits suivants :</p>
+        <div class="rights">
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span><span><span class="rt">Accès</span><span class="rd">Savoir quelles données nous détenons</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span><span class="rt">Rectification</span><span class="rd">Corriger une donnée erronée</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></span><span><span class="rt">Effacement</span><span class="rd">Supprimer ton compte et tes données</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg></span><span><span class="rt">Portabilité</span><span class="rd">Exporter tes données</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span><span class="rt">Opposition</span><span class="rd">T'opposer à certains traitements</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span><span><span class="rt">Limitation</span><span class="rd">Geler un traitement contesté</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12 4 9v6l5-3Z"/><path d="M9 9V6l11 6-11 6v-3"/></svg></span><span><span class="rt">Retrait du consentement</span><span class="rd">Sans effet sur le passé</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></span><span><span class="rt">Réclamation</span><span class="rd">Saisir la CNIL</span></span></div>
+        </div>
+        <p>Pour exercer un droit, écris-nous à <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>. Tu peux aussi effacer toi-même tes données Jobbly : « Supprimer mes données Jobbly », dans les réglages de l'appli. Si tu estimes que tes droits ne sont pas respectés, tu peux saisir la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>).</p>
+      </section>
+      <section id="mineurs">
+        <h2><span class="hn">13</span><span>Les mineurs</span></h2>
+        <p>Jobbly n'est pas destiné aux personnes de moins de 18 ans. Nous ne collectons pas sciemment leurs données. Si tu penses qu'une personne de moins de 18 ans nous a transmis des données, contacte-nous : nous les supprimerons rapidement.</p>
+      </section>
+      <section id="modifications">
+        <h2><span class="hn">14</span><span>Modifications</span></h2>
+        <p>Il se peut que nous mettions cette politique à jour, par exemple lorsque nous ajoutons une fonctionnalité. Un changement important est signalé en tête de cette page, et la date en haut de cette page indique toujours la dernière mise à jour.</p>
+      </section>
+      <section id="contact">
+        <h2><span class="hn">15</span><span>Nous contacter</span></h2>
+        <p>Une question, une demande, un doute ? Une vraie personne te répondra.</p>
+        <div class="contact-box">
+          <h3>Jobbly</h3>
+          <p>Pour toute question relative à tes données personnelles :</p>
+          <div class="cb-row">E-mail : <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a></div>
+        </div>
+      </section>
+    </article>
+  </div>
+</section>
+</div>
+<div data-lang-block="en" lang="en">
+<section class="legal-hero">
+  <span class="blob b1" aria-hidden="true"></span>
+  <div class="wrap legal-wrap inner">
+    <span class="eyebrow legal-eyebrow">Legal</span>
+    <h1>Privacy Policy</h1>
+    <p class="lead legal-lead">What Jobbly keeps while you look for a job, what goes where to find the offers, and how to erase it all.</p>
+    <span class="updated"><span class="dot"></span>Last updated: 22 November 2026</span>
+  </div>
+</section>
+<section class="legal-section-wrap">
+  <div class="wrap legal-wrap legal-grid">
+    <aside class="toc">
+      <p class="toc-title">Contents</p>
+      <ol>
+        <li><a href="#en-responsable"><span class="tn">01</span><span>Who handles your data</span></a></li>
+        <li><a href="#en-donnees"><span class="tn">02</span><span>The data we process</span></a></li>
+        <li><a href="#en-finalites"><span class="tn">03</span><span>Why we process it</span></a></li>
+        <li><a href="#en-bases"><span class="tn">04</span><span>Legal bases</span></a></li>
+        <li><a href="#en-partage"><span class="tn">05</span><span>Sharing with third parties</span></a></li>
+        <li><a href="#en-transferts"><span class="tn">06</span><span>Transfers outside the EU</span></a></li>
+        <li><a href="#en-audience"><span class="tn">07</span><span>Analytics &amp; diagnostics</span></a></li>
+        <li><a href="#en-recherches"><span class="tn">08</span><span>Searches, duplicates and dead links</span></a></li>
+        <li><a href="#en-conservation"><span class="tn">09</span><span>Retention</span></a></li>
+        <li><a href="#en-securite"><span class="tn">10</span><span>Security</span></a></li>
+        <li><a href="#en-cookies"><span class="tn">11</span><span>Cookies &amp; local storage</span></a></li>
+        <li><a href="#en-droits"><span class="tn">12</span><span>Your rights</span></a></li>
+        <li><a href="#en-mineurs"><span class="tn">13</span><span>Children</span></a></li>
+        <li><a href="#en-modifications"><span class="tn">14</span><span>Changes</span></a></li>
+        <li><a href="#en-contact"><span class="tn">15</span><span>Contact us</span></a></li>
+      </ol>
+    </aside>
+    <article class="legal-body">
+      <section id="en-responsable">
+        <h2><span class="hn">01</span><span>Who handles your data</span></h2>
+        <p>Jobbly is published by Lorderis, on a personal basis. Lorderis is the data controller within the meaning of the GDPR (EU Regulation 2016/679), reachable at <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>.</p>
+        <p>Your Jobbly account is a Lorderis account, shared by all our apps. For everything that concerns this account — your identity, your email address and your password — the <a href="https://account.lorderis.dev/confidentialite.html">Lorderis account privacy policy</a> applies. The data you entrust to Jobbly remain governed by this policy.</p>
+        <p>A question about this policy or your data? Write to us at <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>. You'll find all our contact details in section 15.</p>
+      </section>
+      <section id="en-donnees">
+        <h2><span class="hn">02</span><span>The data we process</span></h2>
+        <p>Jobbly keeps only what it needs to search for offers on your behalf and to track your applications.</p>
+        <div class="data-cards">
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><h3>Account</h3></div>
+            <p>Your Lorderis account: email address and sign-in identifier, or your Google account if you sign in with it. Jobbly uses it to know which data are yours.</p>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21c-4-2.5-7-5.5-7-10a7 7 0 0 1 14 0c0 4.5-3 7.5-7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg></span><h3>Settings</h3></div>
+            <ul><li>Your keywords (ten at most)</li><li>Your cities (five at most), with the search radius, the town's code and the position of its centre</li><li>The contract types you choose</li></ul>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><h3>Offers and applications</h3></div>
+            <p>The offers found for you — title, company, place, contract, dates, description, links and sources, as the job sites publish them —, with the dates they were seen, your application status and its date, and the “Fake offer” mark.</p>
+          </div>
+          <div class="data-card">
+            <div class="dc-h"><span class="dc-i tone-4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="m7 14 3-3 3 2 4-5"/></svg></span><h3>Technical data</h3></div>
+            <ul><li>The number of searches run per day, for the quota</li><li>The server's technical logs (IP address included), see section 09</li></ul>
+          </div>
+        </div>
+      </section>
+      <section id="en-finalites">
+        <h2><span class="hn">03</span><span>Why we process it</span></h2>
+        <ul>
+          <li><strong>Searching for offers</strong> that match your settings, on five job sites, when you ask.</li>
+          <li><strong>Making them readable</strong>: merging duplicates, removing expired listings and dead links.</li>
+          <li><strong>Tracking your applications</strong>: keeping your statuses and the offers you follow, on all your devices.</li>
+          <li><strong>Protecting the service</strong>: limiting the number of searches per account and per day, so that the access keys to the job sites serve everyone.</li>
+        </ul>
+      </section>
+      <section id="en-bases">
+        <h2><span class="hn">04</span><span>Legal bases</span></h2>
+        <p>In line with the GDPR, every processing activity relies on a legal basis:</p>
+        <ul>
+          <li><strong>Performance of the contract</strong> (art. 6.1.b) — your settings, your offers, your statuses: it is the service you ask for by creating your account and running a search.</li>
+          <li><strong>Our legitimate interest</strong> (art. 6.1.f) — the search quota, the cache of link checks and the technical logs, which protect the service and keep it running.</li>
+        </ul>
+      </section>
+      <section id="en-partage">
+        <h2><span class="hn">05</span><span>Sharing with third parties</span></h2>
+        <ul>
+          <li><strong>Supabase</strong> — hosts the database, the authentication and the function that runs the searches (section 06).</li>
+          <li><strong>The five job sites</strong> — France Travail, La Bonne Alternance, Jooble, Careerjet and Adzuna — receive, at each search, your keywords and your cities (name, town code, position of the centre, radius), and France Travail the contract types chosen. The request leaves from our server, with our own access keys: <strong>never your email address or your identifier</strong>.</li>
+          <li><strong>The listings' sites</strong> — our server opens each offer's link to check that it still leads to the listing. This check carries no data about you.</li>
+          <li><strong>The French government's Géo API</strong> (geo.api.gouv.fr) — receives the town name you type in the settings, from your browser, so with your IP address.</li>
+          <li><strong>Google</strong> — on the sign-in screen, if Google sign-in is enabled, the page loads Google's button, which receives your IP address and may read its own cookies; if you choose “Continue with Google”, Google confirms your identity to the Lorderis account.</li>
+          <li><strong>The sites where you open an offer</strong> — when you click “See the offer”, you leave Jobbly for the listing's site, which applies its own policy.</li>
+        </ul>
+        <div class="callout">
+          <span class="co-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 7.5 8 10 4.6-2.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <p><strong>Never resold.</strong> We do not sell or rent your data to advertisers or data brokers. Full stop.</p>
+        </div>
+        <p>Transfers outside the European Union, and the safeguards covering them, are set out in section 06.</p>
+      </section>
+      <section id="en-transferts">
+        <h2><span class="hn">06</span><span>Transfers outside the EU</span></h2>
+        <ul>
+          <li><strong>Supabase</strong> hosts the database and the authentication service in <strong>France</strong> (Paris region, eu-west-3). It is our processor within the meaning of Article 28 of the GDPR, under a data processing agreement.</li>
+          <li><strong>Google</strong> (Google LLC), if you sign in with it, is established in the <strong>United States</strong>.</li>
+          <li><strong>Jooble, Careerjet and Adzuna</strong> are companies established outside France; your keywords and cities reach them at each search.</li>
+        </ul>
+        <p class="note">To be completed: the country where Jooble, Careerjet and Adzuna process the searches, and the framework of these transfers, have not been checked with them yet.</p>
+        <p>These transfers to the United States are covered by the safeguards of Chapter V of the GDPR: standard contractual clauses and, where applicable, the relevant adequacy decision.</p>
+      </section>
+      <section id="en-audience">
+        <h2><span class="hn">07</span><span>Analytics &amp; diagnostics</span></h2>
+        <p class="na"><strong>Not applicable:</strong> Jobbly does not measure its audience: no visit statistics in the page, no analytics tool, no advertising.</p>
+        <h3>Crash reports</h3>
+        <p class="na"><strong>Not applicable:</strong> Jobbly's website sends no error report to any third-party service.</p>
+      </section>
+      <section id="en-recherches">
+        <h2><span class="hn">08</span><span>Searches, duplicates and dead links</span></h2>
+        <p>A search starts when you press “Refresh”, never on its own. Our server (a Supabase function) asks the five sites with your settings, in parallel, for one minute at most.</p>
+        <p>It <strong>merges duplicates</strong>: the same offer published on several sites — same address, or same title, same company and same place — becomes a single one, with all its links.</p>
+        <p>It <strong>checks the links</strong>: it opens each link and looks whether the listing still exists (page not found, expired offer, redirect to the site's home page). A link it cannot judge is kept. The result is stored in a cache shared by all accounts, which keeps only a <strong>fingerprint</strong> of the address (SHA-256) and a verdict, with nothing that says who searched for it.</p>
+        <p>It then stores the offers with your account: an offer no longer published is marked as such; an offer whose link is dead is removed, unless you follow it (a status or “Fake offer”). Your status, its date and the date the offer was first seen never change.</p>
+        <p>Each account can run <strong>30 searches per day</strong>; the whole service, 2,000. This counter is stored separately, with no link to your account.</p>
+      </section>
+      <section id="en-conservation">
+        <h2><span class="hn">09</span><span>Retention</span></h2>
+        <p>Your settings, offers and statuses are kept as long as you use Jobbly. They are erased by “Delete my Jobbly data” (in the app's settings), or with your Lorderis account.</p>
+        <p>Every night, a job erases the offers that have been gone from the sites for more than <strong>30 days</strong>, except those with a status or the “Fake offer” mark. An offer whose link is dead and that you do not follow is removed by the search that finds it.</p>
+        <p>The search counter is erased <strong>two days later</strong>. The cache of link checks keeps each verdict for <strong>30 days</strong> at most.</p>
+        <p>Your Lorderis account (email and sign-in identity) is only erased if none of our other apps uses it.</p>
+        <p>Supabase's technical logs (API and database requests, with the IP address) are kept for <strong>one day</strong>, the period of its free plan. The authentication audit log (sign-ups, sign-ins, password changes, with the IP address and the browser) is also written to the database, where no job purges it: it stays there, including after the account is deleted.</p>
+        <p>The site is hosted by <strong>IONOS</strong>, which keeps the server's visit statistics — page requested, browser, system, time, and the IP address made anonymous as soon as it is collected — for <strong>eight weeks</strong>.</p>
+      </section>
+      <section id="en-securite">
+        <h2><span class="hn">10</span><span>Security</span></h2>
+        <p>Everything goes over HTTPS. The database refuses to show your settings and offers to any account but yours (Supabase row-level security), and the page reaches them only with your session. The access keys to the job sites stay on our server, never in the page. The site forbids any script that does not come from itself, from the Supabase library (fixed and verified version) or, on the sign-in screen only, from Google.</p>
+      </section>
+      <section id="en-cookies">
+        <h2><span class="hn">11</span><span>Cookies &amp; local storage</span></h2>
+        <p>Jobbly sets <strong>no cookie</strong>. Your browser keeps, for this site only:</p>
+        <ul>
+          <li>your Lorderis account session (local storage), to stay signed in;</li>
+          <li><code>jobbly:prefs</code>: your language and theme;</li>
+          <li><code>jobbly:last-visit</code>: your account's identifier and the time of your last visit, to mark offers “New”;</li>
+          <li><code>jobbly:app-opened</code>: a mark with no content, so that the site's address takes you straight to the app;</li>
+          <li>for the tab's lifetime, a mark that remembers you closed Google's sign-in suggestion.</li>
+        </ul>
+        <p>The app page loads the Supabase library from <strong>cdn.jsdelivr.net</strong> (which receives your IP address), queries <strong>geo.api.gouv.fr</strong> when you search for a town, and, on the sign-in screen, <strong>accounts.google.com</strong>. The presentation and this page reach no other domain.</p>
+      </section>
+      <section id="en-droits">
+        <h2><span class="hn">12</span><span>Your rights</span></h2>
+        <p>The GDPR gives you full control over your data. At any time, you can exercise the following rights:</p>
+        <div class="rights">
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span><span><span class="rt">Access</span><span class="rd">Know what data we hold</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span><span class="rt">Rectification</span><span class="rd">Fix incorrect data</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></span><span><span class="rt">Erasure</span><span class="rd">Delete your account and data</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg></span><span><span class="rt">Portability</span><span class="rd">Export your data</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span><span class="rt">Objection</span><span class="rd">Object to certain processing</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span><span><span class="rt">Restriction</span><span class="rd">Freeze disputed processing</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12 4 9v6l5-3Z"/><path d="M9 9V6l11 6-11 6v-3"/></svg></span><span><span class="rt">Withdraw consent</span><span class="rd">Without affecting the past</span></span></div>
+          <div class="right"><span class="ri"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></span><span><span class="rt">Complaint</span><span class="rd">Contact the CNIL</span></span></div>
+        </div>
+        <p>To exercise a right, write to us at <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a>. You can also erase your Jobbly data yourself: “Delete my Jobbly data”, in the app's settings. If you believe your rights are not being respected, you can lodge a complaint with the CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">cnil.fr</a>).</p>
+      </section>
+      <section id="en-mineurs">
+        <h2><span class="hn">13</span><span>Children</span></h2>
+        <p>Jobbly is not intended for people under 18. We do not knowingly collect their data. If you believe someone under 18 has given us data, contact us and we'll delete it promptly.</p>
+      </section>
+      <section id="en-modifications">
+        <h2><span class="hn">14</span><span>Changes</span></h2>
+        <p>We may update this policy, for example when we add a feature. A significant change is flagged at the top of this page, and the date at the top of this page always shows the latest update.</p>
+      </section>
+      <section id="en-contact">
+        <h2><span class="hn">15</span><span>Contact us</span></h2>
+        <p>A question, a request, a doubt? A real person will reply.</p>
+        <div class="contact-box">
+          <h3>Jobbly</h3>
+          <p>For any question about your personal data:</p>
+          <div class="cb-row">Email: <a href="mailto:contact@lorderis.dev">contact@lorderis.dev</a></div>
+        </div>
+      </section>
+    </article>
+  </div>
+</section>
+</div>
+</main>
+<nav class="jb-links" aria-label="Pages légales" data-lang-block="fr" lang="fr">
+  <a href="/?presentation">Accueil</a>
+</nav>
+<footer class="lorderis-footer" aria-label="Lorderis" data-lang-block="fr" lang="fr">
+  <a class="lorderis-footer__brand" href="https://lorderis.dev/">Un projet Lorderis</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://account.lorderis.dev/">Mon compte</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://jobbly.lorderis.dev/confidentialite.html">Confidentialité</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://lorderis.dev/#projects">Nos autres projets</a>
+</footer>
+<nav class="jb-links" aria-label="Legal pages" data-lang-block="en" lang="en">
+  <a href="/?presentation">Home</a>
+</nav>
+<footer class="lorderis-footer" aria-label="Lorderis" data-lang-block="en" lang="en">
+  <a class="lorderis-footer__brand" href="https://lorderis.dev/">A Lorderis project</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://account.lorderis.dev/">My account</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://jobbly.lorderis.dev/confidentialite.html">Privacy</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://lorderis.dev/#projects">Our other projects</a>
+</footer>
+<script src="/assets/js/toc-spy.js"></script>
+</body>
+</html>

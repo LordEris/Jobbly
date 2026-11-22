@@ -1,0 +1,143 @@
+/* ===========================================================
+   legal.css — gabarit commun des politiques de confidentialité Lorderis
+   Source : Account-LordEris, reference/privacy/legal.css
+   ===========================================================
+
+   Recopié TEL QUEL dans chaque site qui publie une politique : une
+   correction se fait ici d'abord, puis se reporte partout. Ce qui change
+   d'un site à l'autre — couleurs, polices, rayons — ne s'écrit jamais dans
+   ce fichier : chaque site pose les variables --lp-* (liste ci-dessous) dans
+   SA feuille, avec ses propres jetons, pour le thème clair ET le sombre.
+
+   La forme vient de la page de Foody (foody.lorderis.dev/confidentialite.html),
+   celle que le propriétaire a choisie : héros, sommaire numéroté collant,
+   sections numérotées, cartes de données, grille des droits, encadré de
+   contact. Ses couleurs vertes en dur sont devenues des variables, et ses
+   pastilles d'icône, posées en attribut style, des classes .tone-1 à .tone-4 :
+   la plupart des CSP du projet refusent le style en ligne.
+
+   Aucune règle ne charge quoi que ce soit (ni police, ni image) : la page ne
+   demande rien que la CSP du site n'autorise déjà.
+
+   VARIABLES (toutes ont un repli neutre, mais un site les pose toutes) :
+     --lp-font-head, --lp-font-body   polices des titres et du texte
+     --lp-head-lh    interligne des titres
+     --lp-ink        titres, texte fort
+     --lp-ink-2      texte courant
+     --lp-muted      texte secondaire (≥ 4,5:1 sur le fond)
+     --lp-card       fond des cartes
+     --lp-line       filets et bordures
+     --lp-hover      fond d'un lien du sommaire survolé
+     --lp-accent     puces et pastilles (décor, pas du texte)
+     --lp-accent-ink l'accent employé comme TEXTE (≥ 4,5:1)
+     --lp-accent-soft fond doux de l'accent (numéros, sommaire actif, encadré)
+     --lp-accent-line bordure de l'encadré
+     --lp-callout-icon fond de la pastille d'icône de l'encadré
+     --lp-contact-bg, --lp-contact-ink, --lp-contact-muted, --lp-contact-link
+                     l'encadré de contact (sombre dans les deux thèmes)
+     --lp-tone-1-bg … --lp-tone-4-bg, --lp-tone-1-ink … --lp-tone-4-ink
+                     les quatre pastilles des cartes de données
+     --lp-blob       la tache colorée du héros (opacité réglée par --lp-blob-opacity)
+     --lp-radius-sm, --lp-radius-md, --lp-shadow
+     --lp-sticky-top hauteur de la barre du site (le sommaire colle dessous)
+     --lp-wrap, --lp-gutter  largeur et marge de .legal-wrap, pour un site
+                     qui n'a pas de conteneur à lui
+*/
+
+/* Conteneur, pour le site qui n'en a pas (sinon garder le sien). */
+.legal-wrap{max-width:var(--lp-wrap,1180px);margin:0 auto;padding:0 var(--lp-gutter,24px);box-sizing:border-box;}
+
+/* ── Héros ─────────────────────────────────────────────────── */
+.legal-hero{position:relative;overflow:hidden;padding:56px 0 8px;}
+.legal-hero .blob{position:absolute;border-radius:50%;opacity:var(--lp-blob-opacity,.45);z-index:0;pointer-events:none;-webkit-mask:radial-gradient(circle,#000 26%,transparent 70%);mask:radial-gradient(circle,#000 26%,transparent 70%);}
+.legal-hero .b1{width:460px;height:460px;background:var(--lp-blob,var(--lp-accent-soft,#E9F8EC));top:-220px;right:-120px;}
+.legal-hero .inner{position:relative;z-index:1;max-width:760px;}
+.legal-hero h1{margin:14px 0 0;font-family:var(--lp-font-head,inherit);font-size:clamp(36px,5vw,60px);line-height:var(--lp-head-lh,1.1);color:var(--lp-ink,inherit);overflow-wrap:break-word;}
+.legal-hero .lead{margin:18px 0 0;}
+/* Pour un site qui n'a ni .eyebrow ni .lead à lui. */
+.legal-eyebrow{display:inline-block;font-family:var(--lp-font-body,inherit);font-weight:700;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lp-accent-ink,inherit);}
+.legal-lead{font-size:clamp(17px,1.6vw,19px);line-height:1.6;color:var(--lp-ink-2,inherit);max-width:640px;}
+.updated{display:inline-flex;align-items:center;gap:8px;margin-top:22px;font-size:14px;color:var(--lp-muted,inherit);font-weight:600;}
+.updated .dot{width:7px;height:7px;border-radius:50%;background:var(--lp-accent,currentColor);}
+
+/* ── Grille : sommaire + corps ─────────────────────────────── */
+.legal-section-wrap{padding:40px 0 88px;}
+.legal-grid{display:grid;grid-template-columns:236px minmax(0,1fr);gap:60px;align-items:start;}
+
+.toc{position:sticky;top:calc(var(--lp-sticky-top,72px) + 20px);}
+.toc .toc-title{font-family:var(--lp-font-body,inherit);font-weight:700;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lp-muted,inherit);margin:0 0 14px;}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;}
+.toc a{display:flex;gap:10px;padding:8px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--lp-ink-2,inherit);line-height:1.35;text-decoration:none;transition:background .15s,color .15s;}
+.toc a:hover{background:var(--lp-hover,rgba(127,127,127,.12));color:var(--lp-ink,inherit);}
+.toc a.on{color:var(--lp-accent-ink,inherit);background:var(--lp-accent-soft,rgba(127,127,127,.12));}
+.toc a .tn{color:var(--lp-muted,inherit);font-variant-numeric:tabular-nums;flex-shrink:0;}
+.toc a.on .tn{color:var(--lp-accent-ink,inherit);}
+
+.legal-body{max-width:720px;min-width:0;}
+.legal-body section{scroll-margin-top:calc(var(--lp-sticky-top,72px) + 24px);margin-bottom:44px;}
+.legal-body h2{font-family:var(--lp-font-head,inherit);font-size:clamp(22px,2.4vw,28px);line-height:var(--lp-head-lh,1.2);color:var(--lp-ink,inherit);display:flex;align-items:baseline;gap:12px;margin:0 0 16px;}
+.legal-body h2 .hn{font-size:15px;font-weight:700;color:var(--lp-accent-ink,inherit);font-family:var(--lp-font-body,inherit);background:var(--lp-accent-soft,transparent);border-radius:8px;padding:3px 9px;flex-shrink:0;position:relative;top:-2px;}
+.legal-body h3{font-family:var(--lp-font-head,inherit);font-size:17px;line-height:var(--lp-head-lh,1.3);color:var(--lp-ink,inherit);margin:22px 0 8px;}
+.legal-body p{color:var(--lp-ink-2,inherit);font-size:16px;line-height:1.62;margin:0 0 14px;text-wrap:pretty;overflow-wrap:break-word;}
+/* Tout lien du corps, et pas seulement a.inline : les textes communs
+   (texts.json) s'écrivent sans classe. */
+.legal-body p a,.legal-body li a,.legal-body a.inline{color:var(--lp-accent-ink,inherit);font-weight:600;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1.5px;overflow-wrap:anywhere;}
+.legal-body ul{margin:6px 0 16px;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;}
+.legal-body ul li{position:relative;padding-left:24px;color:var(--lp-ink-2,inherit);font-size:15.5px;line-height:1.55;}
+.legal-body ul li::before{content:"";position:absolute;left:4px;top:9px;width:7px;height:7px;border-radius:2px;background:var(--lp-accent,currentColor);}
+.legal-body strong{color:var(--lp-ink,inherit);font-weight:700;}
+.legal-body code{font-size:.92em;overflow-wrap:anywhere;}
+
+/* Une section sans objet le DIT, comme une section de README. */
+.legal-body p.na{color:var(--lp-muted,inherit);font-style:italic;}
+.legal-body p.na strong{color:var(--lp-muted,inherit);}
+
+/* ── Encadré ───────────────────────────────────────────────── */
+.callout{display:flex;gap:14px;background:var(--lp-accent-soft,rgba(127,127,127,.1));border:1px solid var(--lp-accent-line,var(--lp-line,rgba(127,127,127,.25)));border-radius:var(--lp-radius-md,18px);padding:20px 22px;margin:8px 0 18px;}
+.callout .co-i{width:38px;height:38px;border-radius:11px;background:var(--lp-callout-icon,var(--lp-card,#fff));color:var(--lp-accent-ink,inherit);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--lp-shadow,none);}
+.callout p{margin:0;color:var(--lp-ink,inherit);font-size:15px;line-height:1.55;}
+.callout p strong{color:var(--lp-accent-ink,inherit);}
+
+/* ── Cartes de données (section 02) ────────────────────────── */
+.data-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 16px;}
+.data-card{background:var(--lp-card,transparent);border:1px solid var(--lp-line,rgba(127,127,127,.25));border-radius:var(--lp-radius-sm,12px);padding:18px 18px 16px;box-shadow:var(--lp-shadow,none);min-width:0;}
+.data-card .dc-h{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.data-card .dc-i{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--lp-tone-1-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-1-ink,var(--lp-accent-ink,inherit));}
+.data-card .dc-i.tone-2{background:var(--lp-tone-2-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-2-ink,var(--lp-accent-ink,inherit));}
+.data-card .dc-i.tone-3{background:var(--lp-tone-3-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-3-ink,var(--lp-accent-ink,inherit));}
+.data-card .dc-i.tone-4{background:var(--lp-tone-4-bg,var(--lp-accent-soft,transparent));color:var(--lp-tone-4-ink,var(--lp-accent-ink,inherit));}
+.data-card h3{font-size:15.5px;margin:0;}
+.data-card p{font-size:14px;margin:0;}
+.data-card ul{margin:0;gap:6px;}
+.data-card ul li{font-size:14px;padding-left:20px;}
+.data-card ul li::before{top:8px;width:6px;height:6px;}
+
+/* ── Droits (section 12) ───────────────────────────────────── */
+.rights{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 14px;}
+.right{display:flex;gap:12px;align-items:flex-start;background:var(--lp-card,transparent);border:1px solid var(--lp-line,rgba(127,127,127,.25));border-radius:var(--lp-radius-sm,12px);padding:15px 16px;box-shadow:var(--lp-shadow,none);min-width:0;}
+.right .ri{width:30px;height:30px;border-radius:9px;background:var(--lp-accent-soft,transparent);color:var(--lp-accent-ink,inherit);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.right .rt{display:block;font-weight:700;font-size:14.5px;color:var(--lp-ink,inherit);line-height:1.3;}
+.right .rd{display:block;font-size:13px;color:var(--lp-muted,inherit);line-height:1.4;margin-top:3px;}
+
+/* ── Contact (section 15) ──────────────────────────────────── */
+.contact-box{background:var(--lp-contact-bg,#1f1f24);color:var(--lp-contact-ink,#fff);border-radius:var(--lp-radius-md,18px);padding:26px 28px;margin-top:6px;}
+.contact-box h3{color:var(--lp-contact-ink,#fff);margin:0 0 6px;font-size:18px;}
+.contact-box p{color:var(--lp-contact-muted,rgba(255,255,255,.75));font-size:15px;margin:0 0 14px;}
+.contact-box a{color:var(--lp-contact-link,#fff);font-weight:600;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;}
+.contact-box .cb-row{font-size:15px;color:var(--lp-contact-ink,#fff);line-height:1.7;}
+
+.note,.legal-body p.note{font-size:13px;color:var(--lp-muted,inherit);font-style:italic;margin-top:10px;}
+
+/* ── Petites largeurs ──────────────────────────────────────── */
+@media (max-width:920px){
+  .legal-grid{grid-template-columns:minmax(0,1fr);gap:8px;}
+  .toc{position:static;margin-bottom:30px;padding-bottom:24px;border-bottom:1px solid var(--lp-line,rgba(127,127,127,.25));}
+  .toc ol{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+}
+@media (max-width:560px){
+  .legal-hero{padding:40px 0 4px;}
+  .toc ol{grid-template-columns:1fr;}
+  .legal-section-wrap{padding:28px 0 64px;}
+  .data-cards,.rights{grid-template-columns:1fr;}
+  .contact-box{padding:22px 20px;}
+}

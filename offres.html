@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jobbly — mes offres</title>
+<meta name="pp-title-fr" content="Jobbly — mes offres">
+<meta name="pp-title-en" content="Jobbly — my job offers">
+<meta name="description" content="Jobbly : tes offres d'emploi de cinq sources en une liste, sans doublons ni liens morts, avec le suivi de tes candidatures.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/img/icone.svg" type="image/svg+xml">
+<!-- L'appli de Jobbly : la connexion au compte Lorderis, puis les offres et
+     les réglages, dans une seule page (les vues se choisissent par l'ancre :
+     #reglages, #offre-<id>). C'est la seule page du site qui parle à Google
+     (bouton de Google Identity Services) : sa CSP propre est dans .htaccess.
+     Thème et langue avant le premier rendu, puis les deux boutons de la
+     barre — scripts externes et synchrones (la CSP refuse l'en ligne). -->
+<script src="assets/js/theme-init.js"></script>
+<script src="assets/js/prefs.js"></script>
+<link rel="stylesheet" href="assets/css/lorderis-footer.css">
+<link rel="stylesheet" href="assets/css/lorderis-toggles.css">
+<link rel="stylesheet" href="assets/css/jobbly.css">
+<!-- SDK Supabase : version figée, empreinte SRI vérifiée par le navigateur
+     (la même que account.lorderis.dev). -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"
+  integrity="sha384-nD3dwv4+ZqdYnmZKe/249ImlV04om7xTCcsoSeQYI+RO+XlKPoqAWaJR1M5SJH9p"
+  crossorigin="anonymous"></script>
+<!-- « Continuer avec Google » : la poignée de main commune (copie de
+     reference/web/google-auth.js), avant app.js qui s'en sert. Le script de
+     Google lui-même n'est chargé qu'à la demande, sur l'écran de connexion. -->
+<script defer src="assets/js/google-auth.js"></script>
+<script type="module" src="assets/js/app.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="common.skip">Aller au contenu</a>
+<header class="jb-bar">
+  <div class="jb-bar__in">
+    <a class="jb-brand" href="/?presentation"><img src="assets/img/icone.svg" alt="" width="32" height="32"><span>Jobbly</span></a>
+    <nav class="jb-nav" id="appNav" hidden aria-label="Navigation de l'appli" data-i18n-attr="aria-label:nav.main">
+      <a href="#offres" id="navOffers" data-i18n="nav.offers">Offres</a>
+      <a href="#reglages" id="navSettings" data-i18n="nav.settings">Réglages</a>
+    </nav>
+    <!-- Les deux boutons ronds de lorderis.dev (Account-LordEris,
+         reference/toggles/), câblés par prefs.js : masqués tant qu'il n'a pas
+         tourné, pas de bouton mort. -->
+    <div class="lorderis-toggles" hidden>
+      <button type="button" class="lorderis-theme-toggle" aria-label="Thème : Système. Passer à Clair" title="Thème : Système. Passer à Clair">
+        <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button type="button" class="lorderis-lang-toggle" aria-label="Passer en anglais (EN)" title="Passer en anglais (EN)">
+        <span class="lt-to-en" lang="en" aria-hidden="true">EN</span>
+        <span class="lt-to-fr" lang="fr" aria-hidden="true">FR</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Le temps que Supabase dise qui est connecté : un squelette, pas une
+       page blanche. -->
+  <section id="viewLoading" class="jb-wrap" aria-busy="true">
+    <p class="visually-hidden" role="status" data-i18n="common.loading">Chargement…</p>
+    <span class="sk sk--title" aria-hidden="true"></span>
+    <span class="sk sk--card" aria-hidden="true"></span>
+    <noscript><p class="status status--error">Jobbly a besoin de JavaScript pour se connecter au compte Lorderis. / Jobbly needs JavaScript to sign in to your Lorderis account.</p></noscript>
+  </section>
+
+  <section id="viewUnavailable" class="jb-wrap jb-narrow" hidden aria-labelledby="unavailableTitle">
+    <div class="panel">
+      <h1 id="unavailableTitle" class="op-title" data-i18n="common.unavailable">Service indisponible</h1>
+      <p data-i18n="common.err_sdk">Le service de connexion n'a pas pu se charger.</p>
+    </div>
+  </section>
+
+  <!-- Connexion : e-mail et mot de passe, puis Google — ordre et textes du
+       kit Lorderis. -->
+  <section id="viewSignIn" class="jb-wrap jb-narrow" hidden aria-labelledby="signInTitle">
+    <div class="jb-hero">
+      <p data-i18n="auth.eyebrow">Compte Lorderis</p>
+      <h1 id="signInTitle" data-i18n="auth.welcome">Bon retour.</h1>
+      <p data-i18n="auth.lead">Connecte-toi avec ton compte Lorderis — le même pour toutes nos apps.</p>
+    </div>
+    <div class="panel">
+      <div class="tabs" role="tablist" aria-label="Connexion ou inscription" data-i18n-attr="aria-label:auth.tabs">
+        <button type="button" role="tab" id="tabSignIn" aria-selected="true" aria-controls="authForm" data-i18n="auth.tab_signin">Connexion</button>
+        <button type="button" role="tab" id="tabSignUp" aria-selected="false" aria-controls="authForm" data-i18n="auth.tab_signup">Inscription</button>
+      </div>
+      <form id="authForm" role="tabpanel" aria-labelledby="tabSignIn" novalidate>
+        <div class="field">
+          <label class="field__label" for="authEmail" data-i18n="auth.email">Adresse e-mail</label>
+          <input class="field__input" id="authEmail" name="email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="authPassword" data-i18n="auth.password">Mot de passe</label>
+          <input class="field__input" id="authPassword" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <p class="muted" id="signUpNote" hidden data-i18n="auth.signup_note">Ce compte Lorderis te servira aussi dans nos autres apps.</p>
+        <div class="form-actions">
+          <button class="btn btn--primary btn--block" id="authSubmit" type="submit" data-i18n="auth.submit">Se connecter</button>
+          <button class="btn btn--link" id="forgotBtn" type="button" data-i18n="auth.forgot">Mot de passe oublié ?</button>
+        </div>
+      </form>
+      <div class="divider" data-i18n="auth.or">ou</div>
+      <!-- Le bouton de Google lui-même (Google Identity Services), dessiné
+           par Google dans ce bloc, masqué tant qu'il n'est pas monté ; la
+           phrase dessous dit pourquoi s'il ne l'est pas. -->
+      <div class="google-gis" id="googleGis" hidden>
+        <div class="google-gis__button" id="googleGisButton"></div>
+      </div>
+      <p class="muted" id="googleNote" hidden></p>
+      <div id="authStatus" role="status" aria-live="polite"></div>
+    </div>
+    <p class="muted"><a href="/?presentation" data-i18n="auth.what_is">Qu'est-ce que Jobbly ?</a></p>
+  </section>
+
+  <!-- Les offres -->
+  <section id="viewOffers" class="jb-wrap" hidden aria-labelledby="offersTitle">
+    <div class="jb-hero">
+      <h1 id="offersTitle" data-i18n="offers.title">Mes offres</h1>
+      <p id="offersMeta"></p>
+      <div class="jb-hero__actions">
+        <button class="btn btn--hero-main" id="refreshBtn" type="button"><span id="refreshSpin" class="spinner" hidden aria-hidden="true"></span><span id="refreshLabel" data-i18n="offers.refresh">Actualiser</span></button>
+        <a class="btn btn--hero" href="#reglages" data-i18n="offers.settings">Réglages</a>
+      </div>
+    </div>
+    <div id="searchStatus" role="status" aria-live="polite"></div>
+    <div id="offersStatus" role="alert"></div>
+    <div id="offersBody"></div>
+  </section>
+
+  <!-- Le détail d'une offre, composé par app.js -->
+  <section id="viewOffer" class="jb-wrap jb-narrow" hidden aria-live="polite"></section>
+
+  <!-- Réglages -->
+  <section id="viewSettings" class="jb-wrap jb-narrow" hidden aria-labelledby="settingsTitle">
+    <div class="jb-hero">
+      <h1 id="settingsTitle" data-i18n="settings.title">Réglages</h1>
+      <p data-i18n="settings.lead">Ce que Jobbly cherche pour toi.</p>
+    </div>
+    <div id="settingsIntro"></div>
+    <div id="settingsLoadStatus" role="alert"></div>
+    <form id="settingsForm" class="panel" novalidate>
+      <h2 data-i18n="settings.keywords">Mots-clés</h2>
+      <p class="muted" data-i18n="settings.keywords_help">Un métier ou une expression par mot-clé.</p>
+      <ul class="chip-list" id="keywordList"></ul>
+      <div class="add-row">
+        <label class="visually-hidden" for="keywordInput" data-i18n="settings.keyword_input">Nouveau mot-clé</label>
+        <input class="field__input" id="keywordInput" type="text" maxlength="60" autocomplete="off" data-i18n-attr="placeholder:settings.keyword_input">
+        <button class="btn btn--secondary" id="keywordAdd" type="button" data-i18n="settings.add">Ajouter</button>
+      </div>
+      <div id="keywordStatus" role="status" aria-live="polite"></div>
+
+      <h2 class="mt" data-i18n="settings.cities">Villes et rayon</h2>
+      <p class="muted" data-i18n="settings.cities_help">Jusqu'à 5 villes.</p>
+      <div id="locationList"></div>
+      <div class="add-row">
+        <label class="visually-hidden" for="cityInput" data-i18n="settings.city_input">Chercher une commune</label>
+        <input class="field__input" id="cityInput" type="search" maxlength="80" autocomplete="off" data-i18n-attr="placeholder:settings.city_input">
+        <button class="btn btn--secondary" id="citySearch" type="button" data-i18n="settings.city_search">Chercher</button>
+      </div>
+      <div id="cityResults" aria-live="polite"></div>
+
+      <h2 class="mt" data-i18n="settings.contracts">Types de contrat (France Travail)</h2>
+      <p class="muted" data-i18n="settings.contracts_help">Aucun coché = tous les contrats.</p>
+      <div class="checks" id="contractList"></div>
+
+      <div id="settingsStatus" role="status" aria-live="polite"></div>
+      <div class="save-bar mt">
+        <button class="btn btn--primary" id="settingsSave" type="submit" data-i18n="settings.save">Enregistrer</button>
+        <span class="muted" id="settingsDirty" hidden data-i18n="settings.unsaved">Modifications non enregistrées.</span>
+      </div>
+    </form>
+
+    <div class="panel">
+      <h2 data-i18n="account.title">Compte</h2>
+      <p id="accountEmail"></p>
+      <div class="form-actions">
+        <button class="btn btn--secondary" id="signOutBtn" type="button" data-i18n="account.sign_out">Se déconnecter de cet appareil</button>
+        <a class="btn btn--link" href="https://account.lorderis.dev/" data-i18n="account.manage">Gérer mon compte Lorderis</a>
+      </div>
+      <h3 data-i18n="data.delete">Supprimer mes données Jobbly</h3>
+      <p class="muted" data-i18n="data.delete_text">Tes réglages, tes offres et leurs statuts sont effacés du compte.</p>
+      <div class="form-actions">
+        <button class="btn btn--danger" id="deleteDataBtn" type="button" data-i18n="data.delete">Supprimer mes données Jobbly</button>
+      </div>
+      <div id="deleteStatus" role="alert"></div>
+      <p class="muted" data-i18n="data.where">Pour supprimer ton compte Lorderis et les données de toutes nos apps d'un coup, va sur account.lorderis.dev.</p>
+    </div>
+
+    <div class="panel">
+      <h2 data-i18n="about.title">À propos</h2>
+      <div class="form-actions">
+        <a class="btn btn--link" href="/?presentation" data-i18n="auth.what_is">Qu'est-ce que Jobbly ?</a>
+        <a class="btn btn--link" href="https://jobbly.lorderis.dev/confidentialite.html" data-i18n="about.privacy">Politique de confidentialité</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Après « Supprimer mes données Jobbly » -->
+  <section id="viewDeleted" class="jb-wrap jb-narrow" hidden aria-labelledby="deletedTitle">
+    <div class="panel">
+      <h1 id="deletedTitle" class="op-title" data-i18n="data.deleted_title">Données supprimées</h1>
+      <p id="deletedText"></p>
+      <div class="form-actions">
+        <button class="btn btn--primary" id="deletedBack" type="button" data-i18n="data.back_signin">Revenir à la connexion</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Confirmation : une boîte native, sans script en ligne ; method="dialog"
+     ne navigue pas (form-action 'none' ne la touche pas). -->
+<dialog class="confirm" id="confirmDialog" aria-labelledby="confirmTitle">
+  <form method="dialog">
+    <h2 id="confirmTitle"></h2>
+    <p id="confirmText"></p>
+    <div class="form-actions">
+      <button class="btn btn--secondary" value="cancel" data-i18n="common.cancel">Annuler</button>
+      <button class="btn btn--danger" id="confirmOk" value="ok"></button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<nav class="jb-links" aria-label="Pages légales" data-i18n-attr="aria-label:footer.legal">
+  <a href="/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
+</nav>
+<footer class="lorderis-footer" aria-label="Lorderis">
+  <a class="lorderis-footer__brand" href="https://lorderis.dev/" data-i18n="footer.brand">Un projet Lorderis</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://account.lorderis.dev/" data-i18n="footer.account">Mon compte</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://jobbly.lorderis.dev/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
+  <span aria-hidden="true">·</span>
+  <a href="https://lorderis.dev/#projects" data-i18n="footer.projects">Nos autres projets</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+name: Vérifications
+
+# Sur chaque pull request : la syntaxe des scripts du site, ses règles pures
+# et ses deux catalogues de textes, et les tests de la fonction jobbly-search.
+# Rien n'écrit : le jeton GitHub ne reçoit que la lecture. Le contrôle dans
+# Chromium (tools/check-site.mjs) demande Playwright et se lance avant de
+# livrer, sur une machine qui l'a (AGENTS.md).
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    name: Site et fonction
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          # 22 : `node --test` lit le TypeScript de la fonction sans le
+          # compiler à partir de 22.18.
+          node-version: 22
+
+      - name: Syntaxe des scripts
+        run: |
+          for f in assets/js/*.js tools/*.mjs; do node --check "$f"; done
+
+      - name: Règles du site et catalogues
+        run: node --test tools/rules.test.mjs
+
+      - name: Tests de la fonction jobbly-search
+        run: |
+          # Tant que la fonction n'est pas dans la branche, il n'y a rien à
+          # jouer, et l'étape le dit au lieu de passer en silence.
+          if ls supabase/functions/jobbly-search/*.test.ts >/dev/null 2>&1; then
+            node --test supabase/functions/jobbly-search/*.test.ts
+          else
+            echo "::warning::supabase/functions/jobbly-search/ absent de cette branche : aucun test de la fonction joué."
+          fi
