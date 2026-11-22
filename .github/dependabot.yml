@@ -1,0 +1,32 @@
+# Dependabot — configuration commune à tous les dépôts, tenue à l'identique.
+#
+# Deux régimes, et c'est voulu :
+#
+# - Actions GitHub : mises à jour de version, une fois par mois, regroupées en
+#   une seule pull request. Les actions sont épinglées par SHA (un tag `@v4`
+#   est mobile, un SHA ne désigne qu'un arbre) ; Dependabot est ce qui
+#   empêche ces SHA de vieillir sans que personne ne s'en aperçoive.
+#
+# - npm : correctifs de SÉCURITÉ seulement (`open-pull-requests-limit: 0`
+#   coupe les montées de version, pas les alertes). Une montée de version
+#   automatique casserait l'alignement d'Expo ou d'Electron sans rien protéger,
+#   et les quotas d'Actions de certaines organisations sont serrés : une pull
+#   request par faille publiée, regroupées, rien de plus.
+#
+#   Ce régime ne fonctionne que si « Dependabot security updates » est activé
+#   dans Settings → Code security du dépôt : ce fichier ne peut pas le faire.
+#
+# Jobbly n'a pas de package.json (le site ne se construit pas, la fonction
+# Edge importe ses paquets par npm: dans Deno) : seul le premier régime vaut
+# ici, « aux écosystèmes près ».
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
