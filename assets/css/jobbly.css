@@ -360,6 +360,10 @@ a { color: var(--accent-ink); }
 .tabs button[aria-selected="true"] { background: var(--card); color: var(--accent-ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
 .google-gis { display: flex; justify-content: center; min-height: 44px; }
 .google-gis__button { width: 100%; max-width: 400px; display: flex; justify-content: center; }
+/* Le cadre du bouton de Google garde le schéma clair : avec celui de la page
+   en sombre, le navigateur pose un fond blanc opaque autour du bouton arrondi
+   (même correction qu'account.lorderis.dev). */
+.google-gis iframe { color-scheme: light; }
 
 /* Messages : un mot et une icône, jamais la seule couleur. */
 .status {
