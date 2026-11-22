@@ -357,7 +357,10 @@ async function expectText(name, page, sel, re, label) {
 /** Le pied de page LordEris, celui de lorderis.dev (gabarit d'Account-LordEris,
  *  reference/footer/) : un seul visible, textes du kit dans la langue, liens
  *  dans l'ordre, « Confidentialité » vers la politique de Jobbly, « Mon
- *  compte » gardé, logo chargé, bandeau sombre dans les deux thèmes. */
+ *  compte » gardé, logo chargé, bandeau sombre dans les deux thèmes. Le
+ *  lien vers la politique ne se répète pas juste au-dessus (demande du
+ *  propriétaire, 22 novembre 2026) : hors du pied, il n'existe que dans le
+ *  contenu (main) ou l'en-tête, jamais dans un bloc « Pages légales ». */
 const FOOTER_LINKS = ['https://lorderis.dev/', 'https://github.com/LordEris', 'https://discord.lorderis.dev',
   'https://fiverr.lorderis.dev', 'https://builtbybit.com/members/lorderis.529266/#recent-content',
   'https://jobbly.lorderis.dev/confidentialite.html', 'https://account.lorderis.dev/']
@@ -379,6 +382,9 @@ async function checkFooter(name, page, lang, theme) {
       texts: [...el.querySelectorAll('a')].map((a) => a.textContent.trim()),
       logo: !!img && img.complete && img.naturalWidth > 0,
       bg: getComputedStyle(el).backgroundColor,
+      legalBlocks: document.querySelectorAll('.pres-links, .jb-links, .legal-links').length,
+      privacyAbove: [...document.querySelectorAll('a[href*="confidentialite"]')]
+        .filter((a) => !a.closest('footer.lorderis-footer, main, header')).map((a) => a.outerHTML),
     }
   })
   if (f.shown !== 1) return fail(name, `pied de page LordEris : ${f.shown} visible(s) au lieu de 1`)
@@ -390,6 +396,8 @@ async function checkFooter(name, page, lang, theme) {
   if (!f.logo) fail(name, 'pied de page : logo non chargé')
   const bg = theme === 'dark' ? 'rgb(10, 10, 16)' : 'rgb(17, 24, 39)'
   if (f.bg !== bg) fail(name, `pied de page : fond ${f.bg} au lieu de ${bg}`)
+  if (f.legalBlocks) fail(name, `${f.legalBlocks} bloc(s) « Pages légales » au-dessus du pied`)
+  for (const a of f.privacyAbove) fail(name, 'lien vers la politique hors du pied : ' + a)
   ok(name, 'pied de page LordEris')
 }
 

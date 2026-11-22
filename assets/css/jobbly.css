@@ -546,13 +546,6 @@ dialog.confirm .form-actions { justify-content: flex-end; }
 .sk--title { height: 28px; width: 50%; }
 .sk--card { height: 150px; border-radius: 14px; }
 
-/* ── Pied ───────────────────────────────────────────────────── */
-.jb-links {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px;
-  padding: 18px var(--lp-gutter) 4px; border-top: 1px solid var(--line); margin-top: 20px;
-}
-.jb-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent-ink); font-weight: 600; }
-
 /* La politique : le gabarit, dans la barre du site. */
 .legal-body a { color: var(--accent-ink); }
 .legal-body .contact-box a { color: var(--lp-contact-link); }

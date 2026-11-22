@@ -214,8 +214,10 @@ Trois parties, qui ne se mélangent pas :
   Mon compte, textes du kit au mot près (`footer.*` de `i18n.js` pour
   l'appli, blocs FR / EN pour la présentation et la politique). C'est
   l'exception à la règle des couleurs : il reste sombre dans les deux thèmes
-  et `jobbly.css` n'y touche pas. `tools/check-site.mjs` le relit sur les
-  trois pages.
+  et `jobbly.css` n'y touche pas. Rien ne le double juste au-dessus : pas de
+  bloc « Pages légales » qui répéterait « Confidentialité » (demande du
+  propriétaire, 22 novembre 2026). `tools/check-site.mjs` le relit sur les
+  trois pages, et refuse un tel bloc.
 
 ### Publier
 
