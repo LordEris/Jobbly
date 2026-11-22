@@ -194,33 +194,6 @@
   --lorderis-toggle-fg: var(--on-accent);
 }
 
-/* La ligne « Un projet Lorderis » prend l'habit de Jobbly : textes et liens
-   du kit, au mot près (lorderis-footer.css, recopié tel quel et chargé avant
-   cette feuille) ; ses quatre variables sont surchargées sous les TROIS
-   sélecteurs du kit — le sombre du kit pèse (0,3,0), une règle
-   `.lorderis-footer` seule perdrait. Texte atténué, liens à l'accent employé
-   comme texte, filet des cartes, police du système : AA dans les deux
-   thèmes. */
-.lorderis-footer {
-  --lorderis-footer-text: var(--muted);
-  --lorderis-footer-link: var(--accent-ink);
-  --lorderis-footer-rule: var(--line);
-  --lorderis-footer-font: var(--lp-font-body);
-}
-:root[data-theme="dark"] .lorderis-footer {
-  --lorderis-footer-text: var(--muted);
-  --lorderis-footer-link: var(--accent-ink);
-  --lorderis-footer-rule: var(--line);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .lorderis-footer {
-    --lorderis-footer-text: var(--muted);
-    --lorderis-footer-link: var(--accent-ink);
-    --lorderis-footer-rule: var(--line);
-  }
-}
-.lorderis-footer { margin-top: 0; }
-
 /* La langue affichée masque l'autre bloc (présentation, politique). */
 html[lang="en"] [data-lang-block="fr"],
 html:not([lang="en"]) [data-lang-block="en"] { display: none !important; }

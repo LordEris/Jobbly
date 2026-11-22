@@ -227,10 +227,11 @@ export const STRINGS = {
     'data.back_signin': 'Revenir à la connexion',
     'about.title': 'À propos',
     'about.privacy': 'Politique de confidentialité',
-    'footer.brand': 'Un projet Lorderis',
-    'footer.account': 'Mon compte',
+    // Le pied de page LordEris : textes du kit, au mot près
+    // (Account-LordEris, reference/texts.json, clé « footer »).
+    'footer.copy': '© 2026 LordEris. Développeur full-stack & Minecraft.',
     'footer.privacy': 'Confidentialité',
-    'footer.projects': 'Nos autres projets',
+    'footer.account': 'Mon compte',
     'footer.legal': 'Pages légales',
   },
   en: {
@@ -450,10 +451,9 @@ export const STRINGS = {
     'data.back_signin': 'Back to sign-in',
     'about.title': 'About',
     'about.privacy': 'Privacy policy',
-    'footer.brand': 'A Lorderis project',
+    'footer.copy': '© 2026 LordEris. Full-stack & Minecraft developer.',
+    'footer.privacy': 'Privacy policy',
     'footer.account': 'My account',
-    'footer.privacy': 'Privacy',
-    'footer.projects': 'Our other projects',
     'footer.legal': 'Legal pages',
   },
 }
