@@ -1267,8 +1267,26 @@ export function visibleText(html: string): string {
   return ' ' + fold(decodeEntities(cut.replace(/<[^>]*>/g, ' '))) + ' ';
 }
 
+/**
+ * Le titre de la page et ses grands intitulés (h1 à h3), repliés. Un site
+ * annonce une offre expirée là ; le reste de la page porte des phrases qui
+ * ressemblent à une annonce sans en être une — le formulaire « Signaler cette
+ * offre » de France Travail, présent sur chaque offre vivante, liste « l'offre
+ * n'existe plus sur le site partenaire » parmi ses motifs.
+ */
+export function headlineText(html: string): string {
+  const cut = html
+    .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/(script|style|noscript|template)\s*>/gi, ' ')
+    .replace(/<(script|style)\b[\s\S]*$/i, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+  const parts: string[] = [];
+  const re = /<(title|h1|h2|h3)\b[^>]*>([\s\S]*?)<\/\1\s*>/gi;
+  for (let m = re.exec(cut); m; m = re.exec(cut)) parts.push(m[2]);
+  return ' ' + fold(decodeEntities(parts.join(' ').replace(/<[^>]*>/g, ' '))) + ' ';
+}
+
 export function bodyVerdict(html: string): LinkVerdict | null {
-  const text = visibleText(html);
+  const text = headlineText(html);
   return FOLDED_PHRASES.some((p) => text.includes(p)) ? { state: 'dead', reason: 'expired' } : null;
 }
 

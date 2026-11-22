@@ -88,17 +88,17 @@ test('renvoi vers une recherche qui a perdu l’offre : mort ; qui la garde : ok
 test('phrases d’offre expirée, en français et en anglais', async () => {
   const pages = [
     "<h1>Désolé, cette offre n'est plus disponible</h1>",
-    '<p>Cette annonce n&#39;est plus en ligne.</p>',
-    '<p>L’offre a expiré le 12/10.</p>',
-    '<div class="msg">Offre expirée</div>',
-    '<p>Ce poste a été pourvue.</p>',
-    "<p>La page demandée n'existe plus</p>",
+    '<h1>Cette annonce n&#39;est plus en ligne.</h1>',
+    '<h2>L’offre a expiré le 12/10.</h2>',
+    '<h3 class="msg">Offre expirée</h3>',
+    '<h2>Ce poste a été pourvue.</h2>',
+    "<h1>La page demandée n'existe plus</h1>",
     '<title>Page introuvable</title>',
     '<h2>This job is no longer available</h2>',
-    '<p>Sorry, this job has expired.</p>',
-    '<p>No longer accepting applications</p>',
-    '<p>This position has been filled</p>',
-    '<p>OFFRE EXPIR&Eacute;E</p>',
+    '<h1>Sorry, this job has expired.</h1>',
+    '<title>No longer accepting applications</title>',
+    '<h2>This position has been filled</h2>',
+    '<h1>OFFRE EXPIR&Eacute;E</h1>',
   ];
   for (const body of pages) {
     const d = deps({ 'https://a.fr/offre/12345': { status: 200, body } });
@@ -107,14 +107,21 @@ test('phrases d’offre expirée, en français et en anglais', async () => {
   // Une phrase dans du code, pas dans le texte : la page vit.
   assert.equal(bodyVerdict('<script>var msg = "page introuvable";</script><p>Plombier H/F</p>'), null);
   assert.equal(bodyVerdict('<p>Plombier H/F, poste disponible tout de suite</p>'), null);
+  // Le formulaire « Signaler cette offre » de France Travail, sur chaque offre
+  // vivante : ses motifs ne disent rien de l'offre affichée.
+  assert.equal(
+    bodyVerdict("<title>Offre d'emploi Plombier H/F</title><h1>Plombier H/F</h1><form><label><input type=radio> L'offre n'existe plus sur le site partenaire</label></form>"),
+    null,
+  );
+  assert.equal(bodyVerdict("<title>Offre expirée - Indeed</title><p>Plombier</p>")?.state, 'dead');
   // Une page en latin-1 se lit dans son jeu de caractères.
-  const latin1 = new Uint8Array([...new TextEncoder().encode('<p>Offre expir'), 0xe9, 0x65, ...new TextEncoder().encode('</p>')]);
+  const latin1 = new Uint8Array([...new TextEncoder().encode('<h1>Offre expir'), 0xe9, 0x65, ...new TextEncoder().encode('</h1>')]);
   const text = await readHead(new Response(latin1, { headers: { 'content-type': 'text/html; charset=iso-8859-1' } }));
   assert.equal(bodyVerdict(text)?.state, 'dead');
 });
 
 test('seuls les 128 premiers Ko du corps sont lus', async () => {
-  const big = '<p>' + 'x'.repeat(200 * 1024) + " cette offre n'est plus disponible</p>";
+  const big = '<h1>' + 'x'.repeat(200 * 1024) + " cette offre n'est plus disponible</h1>";
   const d = deps({ 'https://a.fr/offre/12345': { status: 200, body: big } });
   assert.deepEqual(await check('https://a.fr/offre/12345', d), { state: 'ok', reason: 'ok' });
 });
