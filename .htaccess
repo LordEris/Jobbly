@@ -1,0 +1,143 @@
+# ─── jobbly.lorderis.dev — publié dans website-jobbly/ ────────────────────────
+#
+# Socle commun des sites Lorderis : HTTPS, HSTS, CSP sans script en ligne,
+# frame-ancestors 'none', nosniff, Referrer-Policy, Permissions-Policy,
+# fichiers cachés et internes refusés. Trois pages, servies telles quelles :
+#   /                      la présentation (index.html) ;
+#   /offres.html           l'appli : connexion au compte Lorderis, offres,
+#                          réglages — la seule page qui parle au projet commun,
+#                          à l'API Géo et à Google ;
+#   /confidentialite.html  la politique de confidentialité.
+#
+# Deux CSP, donc : une très stricte pour la présentation et la politique,
+# qui ne chargent rien d'ailleurs et ne joignent personne ; une pour l'appli,
+# qui l'élargit au strict nécessaire (bloc <FilesMatch> plus bas). Ce qui
+# n'y est pas, exprès :
+#  · 'unsafe-inline' en script-src : aucune page n'a de script en ligne ni de
+#    gestionnaire on…= ; le thème est posé par assets/js/theme-init.js ;
+#  · 'unsafe-inline' en style-src : aucune page n'a de <style> ni de style="…"
+#    (le seul écart, les attributs de style du bouton de Google, est limité à
+#    l'appli et dit plus bas) ;
+#  · wss:// : Jobbly n'ouvre aucun canal temps réel ;
+#  · Sentry : le site n'envoie aucun rapport d'erreur.
+# Toute retouche se vérifie avec tools/check-site.mjs, qui relit CES en-têtes
+# ici, page par page, et échoue sur la moindre violation.
+
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+  Header always set X-XSS-Protection "0"
+  # La présentation et la politique : rien que le site.
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+
+  # ── L'appli (offres.html), et elle seule ──────────────────────────────────
+  # script-src https://cdn.jsdelivr.net : le SDK Supabase, version figée et
+  #   empreinte SRI (la balise de la page) ;
+  # connect-src :
+  #   · le projet Supabase commun, nommé — l'API (/rest/v1, schéma jobbly),
+  #     l'authentification (/auth/v1) et la fonction jobbly-search
+  #     (/functions/v1). Pas *.supabase.co : un joker laisserait la page
+  #     parler à n'importe quel projet ;
+  #   · https://geo.api.gouv.fr : la recherche de commune des réglages (API
+  #     Géo de l'État, sans clé ni cookie) ;
+  # « Continuer avec Google » : le bouton de Google Identity Services. Les
+  # quatre emplois de https://accounts.google.com/gsi/ que Google documente,
+  # chacun limité à son chemin (les mêmes qu'account.lorderis.dev) :
+  #   · script-src …/gsi/client, chargé à la demande quand l'écran de
+  #     connexion s'affiche, sans empreinte (Google le met à jour sous la même
+  #     adresse) : d'où le chemin exact ;
+  #   · frame-src …/gsi/ : le bouton EST un cadre de Google, comme l'invite ;
+  #   · style-src …/gsi/style : la feuille que le script ajoute au <head> ;
+  #   · connect-src …/gsi/ : l'invite One Tap passe par FedCM.
+  # Un écart, le seul, et voulu : style-src-attr 'unsafe-inline'. Le script
+  # de Google pose dans la page un bouton provisoire dont le balisage porte
+  # des attributs style="…". Il n'ouvre ni les blocs <style> ni les scripts.
+  # img-src data: : le SDK et le bouton dessinent de petites images en data:.
+  # form-action 'none' : les formulaires partent par script. Si le script ne
+  # se charge pas, le navigateur ne doit PAS envoyer l'e-mail et le mot de
+  # passe dans l'URL d'un GET. Les <dialog> (method="dialog") n'y sont pas
+  # soumis.
+  # Cross-Origin-Opener-Policy same-origin-allow-popups : le choix du compte
+  # Google peut s'ouvrir dans une fenêtre qui doit répondre à la page.
+  <FilesMatch "^offres\.html$">
+    Header always set Content-Security-Policy "default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://imbfggbrkpzbqcouxseo.supabase.co https://geo.api.gouv.fr https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+    Header always set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
+
+  # Même valeur sur tous les sites.
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+</IfModule>
+
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS partout : une session du compte ne voyage jamais en clair.
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Fichiers cachés (sauf .well-known) et dossiers qui ne sont pas le site :
+  # la fonction Edge (supabase/), la documentation, les outils, les
+  # workflows. Le déploiement ne les envoie pas ; un envoi à la main ne doit
+  # pas les rendre lisibles pour autant.
+  RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+  RewriteRule ^(supabase|docs|tools|private|node_modules)(/|$) - [F,L]
+
+  # Un retour d'autorisation (`?code=`, une erreur, des jetons) arrivé à `/`
+  # n'est pas pour la présentation : il va à l'appli, requête intacte — c'est
+  # elle qui le juge. Le fragment (`#access_token=`) n'arrive pas au serveur :
+  # assets/js/presentation.js s'en charge dans la page.
+  RewriteCond %{QUERY_STRING} (^|&)(code|error|error_code|error_description|access_token|refresh_token|provider_token|id_token|token_hash)= [NC]
+  RewriteRule ^$ /offres.html [R=302,L]
+</IfModule>
+
+# ─── Fichiers qui n'ont rien à faire sur le serveur ──────────────────────────
+# Le déploiement n'envoie que le site (liste fermée dans
+# .github/workflows/deploy.yml) ; le serveur refuse de lui-même ce qui y
+# arriverait quand même : documentation, SQL, sources de la fonction, et
+# l'ancien script Windows (job_alert.py, ses .bat et .ps1, ses dépendances,
+# son exemple de réglages), remplacé par ce site.
+<FilesMatch "(^\.|\.(md|sh|sql|toml|env|jsx|ts|mjs|py|ps1|bat|cmd|bak|log|orig|swp|tmp|old)$|^(requirements\.txt|config\.exemple\.json|LICENSE|package(-lock)?\.json)$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<IfModule mod_mime.c>
+  AddType image/svg+xml .svg
+  AddType image/webp .webp
+</IfModule>
+
+# ─── Cache navigateur ─────────────────────────────────────────────────────────
+# Aucun fichier ne porte d'empreinte dans son nom et le déploiement écrase en
+# place : une heure pour HTML, CSS et JS, et `no-cache` pour les captures de
+# la présentation, qui gardent leur nom d'une version à l'autre.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html                "access plus 1 hour"
+  ExpiresByType text/css                 "access plus 1 hour"
+  ExpiresByType application/javascript   "access plus 1 hour"
+  ExpiresByType text/javascript          "access plus 1 hour"
+  ExpiresByType image/svg+xml            "access plus 1 day"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.webp$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript image/svg+xml
+</IfModule>

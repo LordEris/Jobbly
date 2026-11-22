@@ -1,0 +1,585 @@
+/* ============================================================
+   JOBBLY — la feuille du site (présentation, appli, politique)
+
+   L'identité est celle du rapport du script Windows (job_alert.py, _CSS) :
+   fond grège, cartes blanches, bandeau bleu en dégradé, pastilles de
+   source pastel. Elle est reprise ici en jetons, pour les deux thèmes, au
+   contraste AA : tout texte à 4,5:1 au moins sur son fond, bordures de champ
+   et icônes à 3:1. Les valeurs d'origine qui n'y arrivaient pas ont été
+   assombries en clair (texte atténué #6A7888 → #55616F sur le fond grège,
+   bandeau #6B8CD4 → #5270C0 sous le texte blanc, « Ignoré » #6A7480 →
+   #4F5862) ; le sombre est neuf. tools/check-site.mjs recalcule chaque
+   paire.
+
+   Le thème : data-theme sur <html>, posé avant le premier rendu par
+   theme-init.js ; à défaut (script bloqué), l'appareil décide.
+   Aucune police chargée : la police du système, comme le rapport, et
+   font-src 'self' n'a rien à servir.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+  --bg: #ECE7E0;
+  --card: #FFFFFF;
+  --card-2: #F5F2EE;
+  --line: #D0C8C0;
+  --field-line: #8C847B;
+  --ink: #232E3C;
+  --ink-2: #3A4858;
+  --muted: #55616F;
+  --accent: #4A66B4;
+  --accent-hover: #3A55A0;
+  --on-accent: #FFFFFF;
+  --accent-ink: #3A5AA8;
+  --accent-soft: #D8E4F8;
+  --hero-a: #5270C0;
+  --hero-b: #3F5CAE;
+  --hero-ink: #FFFFFF;
+  --focus: #2F4C9C;
+  --danger: #A01828;
+  --danger-bg: #FFF0F2;
+  --danger-line: #E07C88;
+  --ok: #0E6035;
+  --ok-bg: #E2F5EA;
+  --warn: #7A4A00;
+  --warn-bg: #FFF4DC;
+  --shadow: 0 2px 10px rgba(0, 0, 0, .09);
+  --shadow-hi: 0 6px 20px rgba(0, 0, 0, .14);
+
+  /* Badges : fond, texte. Ceux des sources sont les couleurs du rapport. */
+  --b-new-bg: #B8EDD4;      --b-new-ink: #0A5E35;
+  --b-alt-bg: #FFE0A0;      --b-alt-ink: #7A4A00;
+  --b-multi-bg: #F0C8E0;    --b-multi-ink: #7A1850;
+  --b-gone-bg: #E3E0DB;     --b-gone-ink: #454C55;
+  --b-dead-bg: #FBD9DC;     --b-dead-ink: #8A1828;
+  --b-ft-bg: #DDD5F5;       --b-ft-ink: #3E2898;
+  --b-lba-bg: #FFE4B0;      --b-lba-ink: #7A4A00;
+  --b-jooble-bg: #C8E8F8;   --b-jooble-ink: #0A3A6A;
+  --b-cj-bg: #F5D8C0;       --b-cj-ink: #6A2800;
+  --b-adzuna-bg: #C0E8D0;   --b-adzuna-ink: #0E6035;
+
+  /* Statuts de candidature : fond, texte, et le filet de la carte. */
+  --s-none-bg: #F0EDE8;     --s-none-ink: #55616F;
+  --s-postule-bg: #C8DCF5;  --s-postule-ink: #1E4A8A;  --s-postule-edge: #4878C8;
+  --s-attente-bg: #F5E5B8;  --s-attente-ink: #7A5010;  --s-attente-edge: #C89020;
+  --s-entretien-bg: #DDD5F5; --s-entretien-ink: #3E2898; --s-entretien-edge: #8060C8;
+  --s-refuse-bg: #F5C5CA;   --s-refuse-ink: #8A1828;   --s-refuse-edge: #C84040;
+  --s-accepte-bg: #C0E8D0;  --s-accepte-ink: #0E6035;  --s-accepte-edge: #28A060;
+  --s-ignore-bg: #DCDCDC;   --s-ignore-ink: #4F5862;   --s-ignore-edge: #8C8C8C;
+  --edge-new: #3BAA72;
+  --edge-alt: #E8960A;
+}
+
+/* Le sombre : choisi, ou suivi de l'appareil quand theme-init.js n'a pas pu
+   poser data-theme. Les deux blocs disent la même chose. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121720;
+  --card: #1B2230;
+  --card-2: #222A38;
+  --line: #2E3848;
+  --field-line: #6B7890;
+  --ink: #E6EAF1;
+  --ink-2: #C9D1DC;
+  --muted: #A3AEBD;
+  --accent: #8EA8EC;
+  --accent-hover: #A9BDF2;
+  --on-accent: #0E1420;
+  --accent-ink: #A9BDF2;
+  --accent-soft: #24345C;
+  --hero-a: #2F4580;
+  --hero-b: #233561;
+  --hero-ink: #FFFFFF;
+  --focus: #A9BDF2;
+  --danger: #FF9DA8;
+  --danger-bg: #3A1820;
+  --danger-line: #A0485A;
+  --ok: #A0E5BE;
+  --ok-bg: #123826;
+  --warn: #FFD27A;
+  --warn-bg: #3A2A0A;
+  --shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  --shadow-hi: 0 6px 20px rgba(0, 0, 0, .5);
+  --b-new-bg: #14382A;      --b-new-ink: #9FE6C2;
+  --b-alt-bg: #3A2A0A;      --b-alt-ink: #FFD27A;
+  --b-multi-bg: #3E1630;    --b-multi-ink: #F2A6D2;
+  --b-gone-bg: #2A3038;     --b-gone-ink: #B8C0CA;
+  --b-dead-bg: #3A1820;     --b-dead-ink: #FF9DA8;
+  --b-ft-bg: #2A2050;       --b-ft-ink: #C7B8FF;
+  --b-lba-bg: #3A2A0A;      --b-lba-ink: #FFD27A;
+  --b-jooble-bg: #0F2E48;   --b-jooble-ink: #9FD4F5;
+  --b-cj-bg: #3D2010;       --b-cj-ink: #F5B48A;
+  --b-adzuna-bg: #123826;   --b-adzuna-ink: #A0E5BE;
+  --s-none-bg: #262E3A;     --s-none-ink: #C2CBD6;
+  --s-postule-bg: #18305A;  --s-postule-ink: #A8C6F5;  --s-postule-edge: #6F9AE0;
+  --s-attente-bg: #3A2C0C;  --s-attente-ink: #F0CB7A;  --s-attente-edge: #D8A830;
+  --s-entretien-bg: #2A2050; --s-entretien-ink: #C7B8FF; --s-entretien-edge: #9A80E0;
+  --s-refuse-bg: #40161E;   --s-refuse-ink: #F5A3AE;   --s-refuse-edge: #E06070;
+  --s-accepte-bg: #123826;  --s-accepte-ink: #A0E5BE;  --s-accepte-edge: #40C080;
+  --s-ignore-bg: #2A3038;   --s-ignore-ink: #B8C0CA;   --s-ignore-edge: #707884;
+  --edge-new: #40C080;
+  --edge-alt: #E8A83A;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #121720;
+    --card: #1B2230;
+    --card-2: #222A38;
+    --line: #2E3848;
+    --field-line: #6B7890;
+    --ink: #E6EAF1;
+    --ink-2: #C9D1DC;
+    --muted: #A3AEBD;
+    --accent: #8EA8EC;
+    --accent-hover: #A9BDF2;
+    --on-accent: #0E1420;
+    --accent-ink: #A9BDF2;
+    --accent-soft: #24345C;
+    --hero-a: #2F4580;
+    --hero-b: #233561;
+    --focus: #A9BDF2;
+    --danger: #FF9DA8;
+    --danger-bg: #3A1820;
+    --danger-line: #A0485A;
+    --ok: #A0E5BE;
+    --ok-bg: #123826;
+    --warn: #FFD27A;
+    --warn-bg: #3A2A0A;
+  }
+}
+
+/* Les variables des gabarits communs (legal.css, presentation.css). */
+:root {
+  --lp-font-head: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --lp-font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --lp-head-lh: 1.1;
+  --lp-ink: var(--ink);
+  --lp-ink-2: var(--ink-2);
+  --lp-muted: var(--muted);
+  --lp-card: var(--card);
+  --lp-line: var(--line);
+  --lp-hover: var(--card-2);
+  --lp-accent: var(--accent);
+  --lp-accent-ink: var(--accent-ink);
+  --lp-accent-soft: var(--accent-soft);
+  --lp-accent-line: var(--accent);
+  --lp-callout-icon: var(--card);
+  --lp-contact-bg: #1B2230;
+  --lp-contact-ink: #E6EAF1;
+  --lp-contact-muted: #A3AEBD;
+  --lp-contact-link: #A9BDF2;
+  --lp-tone-1-bg: var(--b-ft-bg);     --lp-tone-1-ink: var(--b-ft-ink);
+  --lp-tone-2-bg: var(--b-jooble-bg); --lp-tone-2-ink: var(--b-jooble-ink);
+  --lp-tone-3-bg: var(--b-new-bg);    --lp-tone-3-ink: var(--b-new-ink);
+  --lp-tone-4-bg: var(--b-alt-bg);    --lp-tone-4-ink: var(--b-alt-ink);
+  --lp-blob: var(--accent-soft);
+  --lp-blob-opacity: .9;
+  --lp-radius-sm: 10px;
+  --lp-radius-md: 14px;
+  --lp-shadow: var(--shadow);
+  --lp-sticky-top: 64px;
+  --lp-wrap: 1180px;
+  --lp-gutter: 16px;
+  /* Propres à la présentation (presentation.css). */
+  --lp-page: var(--bg);
+  --lp-band: var(--card-2);
+  --lp-cta-bg: var(--accent);
+  --lp-cta-ink: var(--on-accent);
+  --lp-cta-hover: var(--accent-hover);
+  /* Les deux boutons ronds du kit (lorderis-toggles.css, chargé avant) :
+     l'accent de Jobbly, son texte posé dessus (5,45:1 en clair, 7,86:1 en
+     sombre). Les jetons suivent déjà le thème. */
+  --lorderis-toggle-bg: var(--accent);
+  --lorderis-toggle-fg: var(--on-accent);
+}
+
+/* La ligne « Un projet Lorderis » prend l'habit de Jobbly : textes et liens
+   du kit, au mot près (lorderis-footer.css, recopié tel quel et chargé avant
+   cette feuille) ; ses quatre variables sont surchargées sous les TROIS
+   sélecteurs du kit — le sombre du kit pèse (0,3,0), une règle
+   `.lorderis-footer` seule perdrait. Texte atténué, liens à l'accent employé
+   comme texte, filet des cartes, police du système : AA dans les deux
+   thèmes. */
+.lorderis-footer {
+  --lorderis-footer-text: var(--muted);
+  --lorderis-footer-link: var(--accent-ink);
+  --lorderis-footer-rule: var(--line);
+  --lorderis-footer-font: var(--lp-font-body);
+}
+:root[data-theme="dark"] .lorderis-footer {
+  --lorderis-footer-text: var(--muted);
+  --lorderis-footer-link: var(--accent-ink);
+  --lorderis-footer-rule: var(--line);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .lorderis-footer {
+    --lorderis-footer-text: var(--muted);
+    --lorderis-footer-link: var(--accent-ink);
+    --lorderis-footer-rule: var(--line);
+  }
+}
+.lorderis-footer { margin-top: 0; }
+
+/* La langue affichée masque l'autre bloc (présentation, politique). */
+html[lang="en"] [data-lang-block="fr"],
+html:not([lang="en"]) [data-lang-block="en"] { display: none !important; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.55 var(--lp-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+a { color: var(--accent-ink); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.lorderis-theme-toggle:focus-visible,
+.lorderis-lang-toggle:focus-visible { outline-color: var(--focus); }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; margin: -1px; padding: 0; border: 0;
+}
+.skip-link { position: absolute; left: 8px; top: -60px; z-index: 50; background: var(--card); color: var(--ink); padding: 10px 14px; border-radius: 8px; }
+.skip-link:focus { top: 8px; }
+
+/* ── La barre ───────────────────────────────────────────────── */
+.jb-bar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.jb-bar__in {
+  max-width: var(--lp-wrap); margin: 0 auto; padding: 0 var(--lp-gutter);
+  min-height: 64px; display: flex; align-items: center; gap: 12px;
+}
+.jb-brand {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px;
+  color: var(--ink); text-decoration: none; font: 800 19px/1 var(--lp-font-head);
+  margin-right: auto;
+}
+.jb-brand img { width: 32px; height: 32px; border-radius: 8px; }
+.jb-nav { display: flex; gap: 4px; }
+.jb-nav a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px;
+  border-radius: 10px; color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: 15px;
+}
+.jb-nav a:hover { background: var(--card-2); }
+.jb-nav a[aria-current="page"] { color: var(--accent-ink); background: var(--accent-soft); }
+@media (max-width: 520px) {
+  .jb-brand span { display: none; }
+  .jb-nav a { padding: 0 10px; font-size: 14px; }
+}
+
+/* ── Mise en page de l'appli ────────────────────────────────── */
+.jb-wrap { max-width: var(--lp-wrap); margin: 0 auto; padding: 20px var(--lp-gutter) 40px; }
+.jb-narrow { max-width: 620px; }
+
+/* Le bandeau du rapport, en dégradé ; le texte blanc y tient 4,73:1 à
+   l'extrémité la plus claire. */
+.jb-hero {
+  background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  color: var(--hero-ink);
+  padding: 22px 24px; border-radius: 16px; margin-bottom: 20px;
+  box-shadow: 0 6px 24px rgba(63, 92, 174, .3);
+}
+.jb-hero h1 { margin: 0 0 6px; font: 800 clamp(24px, 4vw, 30px)/1.15 var(--lp-font-head); }
+.jb-hero p { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
+.jb-hero__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.jb-hero .btn--hero {
+  background: rgba(255, 255, 255, .16); color: var(--hero-ink);
+  border: 1.5px solid rgba(255, 255, 255, .6);
+}
+.jb-hero .btn--hero:hover { background: rgba(255, 255, 255, .28); }
+.jb-hero .btn--hero-main { background: #FFFFFF; color: #233561; border: 1.5px solid #FFFFFF; }
+.jb-hero .btn--hero-main:hover { background: #E6ECFA; }
+.jb-hero .btn--hero-main:disabled { background: #E6ECFA; color: #233561; }
+.jb-hero :focus-visible { outline-color: #FFFFFF; }
+
+/* ── Boutons : l'état pressé se dit par le fond ─────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px; border-radius: 10px;
+  font: 700 15px/1.2 var(--lp-font-body); text-decoration: none; cursor: pointer;
+  border: 1.5px solid transparent; text-align: center;
+}
+.btn:disabled { cursor: progress; }
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--primary:hover, .btn--primary:active { background: var(--accent-hover); }
+.btn--secondary { background: var(--card); color: var(--ink-2); border-color: var(--field-line); }
+.btn--secondary:hover, .btn--secondary:active { background: var(--card-2); }
+.btn--danger { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-line); }
+.btn--danger:hover, .btn--danger:active { background: var(--card-2); }
+.btn--link {
+  background: none; border: none; color: var(--accent-ink); padding: 0 6px;
+  text-decoration: underline; text-underline-offset: 2px; font-weight: 600;
+}
+.btn--block { width: 100%; }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2.5px solid currentColor; border-right-color: transparent;
+  animation: jb-spin .8s linear infinite;
+}
+@keyframes jb-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+/* ── Cartes de formulaire ───────────────────────────────────── */
+.panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.panel h2 { margin: 0 0 6px; font: 800 19px/1.25 var(--lp-font-head); }
+.panel h3 { margin: 18px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.panel p { margin: 0 0 10px; }
+.muted { color: var(--muted); font-size: 14.5px; }
+.mt { margin-top: 28px !important; }
+.m0 { margin: 0; }
+.status__body > p + p, .status__body > p + ul, .status__body > ul + p { margin-top: 4px; }
+.field { margin-bottom: 14px; }
+.field__label { display: block; font-weight: 700; font-size: 14.5px; margin-bottom: 6px; }
+.field__input, .field select, .status-select {
+  width: 100%; min-height: 44px; padding: 8px 12px;
+  border: 1.5px solid var(--field-line); border-radius: 10px;
+  background: var(--card); color: var(--ink); font: 400 16px/1.3 var(--lp-font-body);
+}
+.field__input:focus, .status-select:focus { outline: 3px solid var(--focus); outline-offset: 1px; }
+.field__hint { font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; margin: 18px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+
+/* Onglets Connexion / Inscription */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; background: var(--card-2); border-radius: 12px; margin-bottom: 18px; }
+.tabs button {
+  min-height: 44px; border: none; border-radius: 9px; background: transparent;
+  color: var(--ink-2); font: 700 15px/1 var(--lp-font-body); cursor: pointer;
+}
+.tabs button[aria-selected="true"] { background: var(--card); color: var(--accent-ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
+.google-gis { display: flex; justify-content: center; min-height: 44px; }
+.google-gis__button { width: 100%; max-width: 400px; display: flex; justify-content: center; }
+
+/* Messages : un mot et une icône, jamais la seule couleur. */
+.status {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px; border-radius: 10px; margin: 12px 0 0; font-size: 15px;
+  border: 1px solid var(--line); background: var(--card-2); color: var(--ink);
+}
+.status::before { content: "ℹ"; font-weight: 800; flex: none; }
+.status--error { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-line); }
+.status--error::before { content: "⚠"; }
+.status--ok { background: var(--ok-bg); color: var(--ok); border-color: currentColor; }
+.status--ok::before { content: "✓"; }
+.status--warn { background: var(--warn-bg); color: var(--warn); border-color: currentColor; }
+.status--warn::before { content: "⚠"; }
+.status a, .status button.btn--link { color: inherit; }
+#searchStatus .status, #offersStatus .status, #settingsIntro .status, #settingsLoadStatus .status { margin: 0 0 16px; }
+.status ul { margin: 6px 0 0; padding-left: 18px; }
+.status__body { min-width: 0; overflow-wrap: anywhere; }
+
+/* ── Statistiques ───────────────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; box-shadow: var(--shadow); }
+.stat .n { font-size: 30px; font-weight: 800; color: var(--accent-ink); line-height: 1.1; }
+.stat .l { font-size: 12.5px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+/* Sur un téléphone, les quatre compteurs tiennent sur une ligne, et chaque
+   rangée de filtres défile de côté dans sa propre bande (la page, elle, ne
+   défile jamais de côté) : la liste commence plus haut. */
+@media (max-width: 520px) {
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .stat { padding: 10px 8px; text-align: center; }
+  .stat .n { font-size: 22px; }
+  .stat .l { font-size: 10.5px; letter-spacing: .02em; overflow-wrap: anywhere; }
+}
+
+/* ── Filtres ────────────────────────────────────────────────── */
+.filters { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-label { font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
+  border-radius: 999px; border: 1.5px solid var(--field-line); background: var(--card);
+  color: var(--ink-2); font: 700 14px/1 var(--lp-font-body); cursor: pointer;
+}
+.chip-btn:hover { background: var(--card-2); }
+.chip-btn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.chip-btn[aria-pressed="true"]::before { content: "✓"; }
+.chip-count { background: rgba(127, 127, 127, .2); border-radius: 999px; padding: 2px 7px; font-size: 12px; }
+@media (max-width: 520px) {
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; }
+  .filter-row > * { flex: none; }
+}
+
+/* ── Les offres ─────────────────────────────────────────────── */
+.offers-section { margin-bottom: 30px; }
+.offers-section > h2 {
+  font: 800 18px/1.3 var(--lp-font-head); color: var(--ink);
+  border-left: 4px solid var(--accent); padding-left: 12px; margin: 0 0 14px;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.card {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  background: var(--card); border-radius: 14px; padding: 16px 16px 14px;
+  border: 1px solid var(--line); border-left: 5px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.card:hover { box-shadow: var(--shadow-hi); }
+.card.is-new { border-left-color: var(--edge-new); }
+.card.is-alt { border-left-color: var(--edge-alt); }
+.card[data-status="postule"] { border-left-color: var(--s-postule-edge); }
+.card[data-status="attente"] { border-left-color: var(--s-attente-edge); }
+.card[data-status="entretien"] { border-left-color: var(--s-entretien-edge); }
+.card[data-status="refuse"] { border-left-color: var(--s-refuse-edge); }
+.card[data-status="accepte"] { border-left-color: var(--s-accepte-edge); }
+.card[data-status="ignore"] { border-left-color: var(--s-ignore-edge); }
+.card.is-gone { border-style: dashed; border-left-style: solid; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; letter-spacing: .02em;
+}
+.badge--new { background: var(--b-new-bg); color: var(--b-new-ink); }
+.badge--alt { background: var(--b-alt-bg); color: var(--b-alt-ink); }
+.badge--multi { background: var(--b-multi-bg); color: var(--b-multi-ink); }
+.badge--gone { background: var(--b-gone-bg); color: var(--b-gone-ink); }
+.badge--dead { background: var(--b-dead-bg); color: var(--b-dead-ink); }
+.src--ft { background: var(--b-ft-bg); color: var(--b-ft-ink); }
+.src--lba { background: var(--b-lba-bg); color: var(--b-lba-ink); }
+.src--jooble { background: var(--b-jooble-bg); color: var(--b-jooble-ink); }
+.src--careerjet { background: var(--b-cj-bg); color: var(--b-cj-ink); }
+.src--adzuna { background: var(--b-adzuna-bg); color: var(--b-adzuna-ink); }
+.src--other { background: var(--b-gone-bg); color: var(--b-gone-ink); }
+.card h3 { margin: 0 0 6px; font-size: 16.5px; line-height: 1.3; font-weight: 750; }
+/* Le titre est le lien vers le détail ; il couvre la carte, sauf la rangée
+   d'actions, posée au-dessus. */
+.card h3 a { color: var(--accent-ink); text-decoration: none; overflow-wrap: anywhere; }
+.card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+.card h3 a:hover { text-decoration: underline; }
+.card h3 a:focus-visible { outline: none; }
+.card h3 a:focus-visible::after { outline: 3px solid var(--focus); outline-offset: 2px; }
+.meta-list { display: flex; flex-direction: column; gap: 3px; margin: 4px 0 6px; }
+.meta-row { font-size: 14px; color: var(--ink-2); display: flex; gap: 8px; min-width: 0; }
+.meta-row > span:last-child { overflow-wrap: anywhere; min-width: 0; }
+.meta-row .mi { flex: none; width: 1.2em; text-align: center; }
+.status-row {
+  position: relative; z-index: 1;
+  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line);
+  display: flex; gap: 8px; align-items: center;
+}
+.status-select { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; cursor: pointer; }
+.status-select[data-status=""] { background: var(--s-none-bg); color: var(--s-none-ink); }
+.status-select[data-status="postule"] { background: var(--s-postule-bg); color: var(--s-postule-ink); }
+.status-select[data-status="attente"] { background: var(--s-attente-bg); color: var(--s-attente-ink); }
+.status-select[data-status="entretien"] { background: var(--s-entretien-bg); color: var(--s-entretien-ink); }
+.status-select[data-status="refuse"] { background: var(--s-refuse-bg); color: var(--s-refuse-ink); }
+.status-select[data-status="accepte"] { background: var(--s-accepte-bg); color: var(--s-accepte-ink); }
+.status-select[data-status="ignore"] { background: var(--s-ignore-bg); color: var(--s-ignore-ink); }
+.status-select option { background: var(--card); color: var(--ink); }
+.block-btn {
+  flex: none; min-height: 44px; padding: 0 12px; border-radius: 10px;
+  border: 1.5px solid var(--danger-line); background: var(--danger-bg); color: var(--danger);
+  font: 700 13.5px/1.1 var(--lp-font-body); cursor: pointer;
+}
+.block-btn:hover, .block-btn:active { background: var(--card-2); }
+.empty {
+  text-align: center; padding: 40px 20px; color: var(--muted);
+  background: var(--card); border: 1px dashed var(--field-line); border-radius: 14px;
+}
+.empty h2 { color: var(--ink); font-size: 19px; margin: 0 0 8px; }
+.empty p { margin: 0 0 14px; }
+
+/* ── Le détail d'une offre ──────────────────────────────────── */
+.op-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.op-title { font: 800 clamp(22px, 3.4vw, 30px)/1.2 var(--lp-font-head); margin: 0 0 14px; overflow-wrap: anywhere; }
+.op-meta { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.op-meta .meta-row { font-size: 15.5px; }
+.op-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.op-links .also { font-size: 14.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.op-links .also a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; }
+.op-desc {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px 20px; margin-bottom: 20px; font-size: 15.5px; color: var(--ink-2);
+  line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.op-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-top: 16px; border-top: 1px solid var(--line); }
+.op-actions .status-select { flex: 1 1 200px; max-width: 280px; }
+
+/* ── Réglages ───────────────────────────────────────────────── */
+.chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; list-style: none; padding: 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 2px; padding-left: 12px;
+  border-radius: 999px; background: var(--accent-soft); color: var(--ink); font-weight: 700; font-size: 14.5px;
+  max-width: 100%;
+}
+.chip > span { overflow-wrap: anywhere; min-width: 0; }
+.chip-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border: none; background: none; border-radius: 999px;
+  color: var(--ink-2); font-size: 20px; cursor: pointer; flex: none;
+}
+.chip-del:hover { background: rgba(127, 127, 127, .18); }
+.add-row { display: flex; gap: 8px; }
+.add-row .field__input { flex: 1; min-width: 0; }
+.loc-item {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; align-items: center; gap: 10px;
+  padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--card-2); margin-bottom: 8px;
+}
+.loc-city { font-weight: 700; overflow-wrap: anywhere; }
+.loc-city small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+.loc-item.is-incomplete { border-color: var(--warn); border-style: dashed; }
+.loc-item.is-incomplete small { color: var(--warn); font-weight: 700; }
+.loc-radius { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-2); }
+.loc-radius select { min-height: 44px; border-radius: 10px; border: 1.5px solid var(--field-line); background: var(--card); color: var(--ink); padding: 0 6px; font-size: 15px; }
+.suggest { list-style: none; padding: 0; margin: 8px 0 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+.suggest li + li { border-top: 1px solid var(--line); }
+.suggest button {
+  display: block; width: 100%; min-height: 44px; padding: 8px 14px; text-align: left;
+  background: none; border: none; color: var(--ink); font: 600 15px/1.3 var(--lp-font-body); cursor: pointer;
+}
+.suggest button:hover { background: var(--card-2); }
+.suggest small { color: var(--muted); font-weight: 400; }
+.checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 4px 12px; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-size: 15px; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.save-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* ── Boîte de confirmation ──────────────────────────────────── */
+dialog.confirm {
+  width: min(92vw, 460px); border: 1px solid var(--line); border-radius: 16px;
+  background: var(--card); color: var(--ink); padding: 22px; box-shadow: var(--shadow-hi);
+}
+dialog.confirm::backdrop { background: rgba(10, 16, 28, .55); }
+dialog.confirm h2 { margin: 0 0 8px; font-size: 19px; }
+dialog.confirm p { margin: 0 0 16px; color: var(--ink-2); }
+dialog.confirm .form-actions { justify-content: flex-end; }
+
+/* ── Annonces ───────────────────────────────────────────────── */
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60;
+  max-width: calc(100vw - 32px); width: max-content;
+  background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 12px;
+  font-weight: 700; font-size: 15px; box-shadow: var(--shadow-hi);
+}
+
+/* Le chargement : un squelette, pas une page blanche. */
+.sk { display: block; border-radius: 8px; background: var(--card-2); height: 16px; margin: 10px 0; }
+.sk--title { height: 28px; width: 50%; }
+.sk--card { height: 150px; border-radius: 14px; }
+
+/* ── Pied ───────────────────────────────────────────────────── */
+.jb-links {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px;
+  padding: 18px var(--lp-gutter) 4px; border-top: 1px solid var(--line); margin-top: 20px;
+}
+.jb-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent-ink); font-weight: 600; }
+
+/* La politique : le gabarit, dans la barre du site. */
+.legal-body a { color: var(--accent-ink); }
+.legal-body .contact-box a { color: var(--lp-contact-link); }
+.contact-box { border: 1px solid var(--line); }
+
+/* La présentation : la barre a un bouton pour ouvrir l'appli. */
+.pres-hero__shot img, .pres-shot img { border-radius: 18px; border: 1px solid var(--line); box-shadow: var(--shadow-hi); height: auto; }

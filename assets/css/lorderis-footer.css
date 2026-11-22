@@ -1,0 +1,50 @@
+/* lorderis-footer.css — identique dans tous les sites : on le recopie tel
+   quel, on ne le modifie jamais. Ses couleurs et sa police sont celles de
+   Lorderis (account.lorderis.dev et lorderis.dev s'en tiennent là).
+   Chaque projet donne à la ligne SA direction artistique (décision du
+   propriétaire, novembre 2026) en surchargeant ces quatre variables dans sa
+   propre feuille, chargée APRÈS celle-ci, pour le clair ET pour le sombre :
+     --lorderis-footer-text  son texte secondaire
+     --lorderis-footer-link  sa couleur d'accent lisible en texte
+     --lorderis-footer-rule  sa bordure
+     --lorderis-footer-font  sa police de texte
+   Texte et liens tiennent 4,5:1 sur le fond du pied, dans les deux thèmes.
+   Le sombre est posé plus bas avec une spécificité de (0,3,0) : une
+   surcharge du sombre reprend EXACTEMENT ces sélecteurs-là, sinon elle perd.
+     .lorderis-footer { … le clair … }
+     :root[data-theme="dark"] .lorderis-footer { … le sombre … }
+     @media (prefers-color-scheme: dark) {
+       :root:not([data-theme]) .lorderis-footer { … le sombre … }
+     }
+   Les textes, l'ordre des liens et leurs adresses restent ceux du kit, au
+   mot près (reference/texts.json) : seule l'apparence suit le projet.
+   Le sombre suit le thème CHOISI sur le site (data-theme sur <html>, posé par
+   le bouton Système/Clair/Sombre), et l'appareil seulement quand le site n'en
+   a posé aucun : suivre l'appareil seul rendait le pied de page illisible sur
+   un site sombre consulté depuis un téléphone en mode clair. */
+.lorderis-footer {
+  --lorderis-footer-text: #4B5563;
+  --lorderis-footer-link: #6D28D9;
+  --lorderis-footer-rule: #E5E7EB;
+  --lorderis-footer-font: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: .5rem; padding: 1rem 1.25rem; margin-top: 2rem;
+  border-top: 1px solid var(--lorderis-footer-rule);
+  font: 400 .875rem/1.5 var(--lorderis-footer-font);
+  color: var(--lorderis-footer-text);
+}
+.lorderis-footer a { color: var(--lorderis-footer-link); text-decoration: none; }
+.lorderis-footer a:hover, .lorderis-footer a:focus-visible { text-decoration: underline; }
+.lorderis-footer__brand { font-weight: 600; }
+:root[data-theme="dark"] .lorderis-footer {
+  --lorderis-footer-text: #A1A1B5;
+  --lorderis-footer-link: #C4B5FD;
+  --lorderis-footer-rule: #2E2E42;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .lorderis-footer {
+    --lorderis-footer-text: #A1A1B5;
+    --lorderis-footer-link: #C4B5FD;
+    --lorderis-footer-rule: #2E2E42;
+  }
+}

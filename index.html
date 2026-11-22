@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jobbly — les offres d'emploi de cinq sites en une liste</title>
+    <meta name="pp-title-fr" content="Jobbly — les offres d'emploi de cinq sites en une liste" />
+    <meta name="pp-title-en" content="Jobbly — job offers from five sites in one list" />
+    <meta name="description" content="Jobbly rassemble les offres d'emploi de France Travail, La Bonne Alternance, Jooble, Careerjet et Adzuna en une seule liste, sans doublons ni liens morts, et suit tes candidatures. Gratuit, dans le navigateur, avec ton compte Lorderis." />
+    <meta name="robots" content="index, follow" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- La présentation de Jobbly, servie à l'adresse du site (`/`) ;
+         l'appli est juste derrière, à /offres.html. Au gabarit commun des
+         présentations Lorderis (Account-LordEris, reference/presentation/) :
+         presentation.css et presentation.js recopiés tels quels, leurs
+         variables --lp-* posées dans jobbly.css pour les deux thèmes.
+         presentation.js lit ces deux balises : où est l'appli, et la marque
+         qu'elle pose dans le navigateur (assets/js/app.js). Tout ce que la
+         page annonce se lit dans le code et dans la politique de
+         confidentialité : un changement de l'un se reporte dans l'autre. -->
+    <meta name="lorderis-app-path" content="/offres.html" />
+    <meta name="lorderis-app-opened-key" content="jobbly:app-opened" />
+    <!-- Scripts classiques, externes et synchrones, avant les feuilles (la
+         CSP refuse le script en ligne) : thème et langue, passage à l'appli,
+         puis les deux boutons de la barre. -->
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/presentation.js"></script>
+    <script src="/assets/js/prefs.js"></script>
+    <link rel="stylesheet" href="/assets/css/lorderis-footer.css" />
+    <link rel="stylesheet" href="/assets/css/lorderis-toggles.css" />
+    <link rel="stylesheet" href="/assets/css/jobbly.css" />
+    <link rel="stylesheet" href="/assets/css/presentation.css" />
+    <link rel="icon" href="/assets/img/icone.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="jb-bar">
+      <div class="jb-bar__in">
+        <a class="jb-brand" href="/?presentation"><img src="/assets/img/icone.svg" alt="" width="32" height="32" /><span>Jobbly</span></a>
+        <div class="lorderis-toggles" hidden>
+      <button type="button" class="lorderis-theme-toggle" aria-label="Thème : Système. Passer à Clair" title="Thème : Système. Passer à Clair">
+        <svg class="icon-system" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button type="button" class="lorderis-lang-toggle" aria-label="Passer en anglais (EN)" title="Passer en anglais (EN)">
+        <span class="lt-to-en" lang="en" aria-hidden="true">EN</span>
+        <span class="lt-to-fr" lang="fr" aria-hidden="true">FR</span>
+      </button>
+    </div>
+      </div>
+    </header>
+    <main id="contenu">
+      <!-- Le gabarit commun, une fois par langue : la langue affichée masque
+           l'autre bloc (jobbly.css, data-lang-block). Les captures sont
+           celles de l'appli réelle, au thème de la page, avec des données de
+           démonstration (tools/check-site.mjs --apercu). -->
+      <div data-lang-block="fr" lang="fr">
+        <section class="pres-hero">
+          <span class="pres-blob" aria-hidden="true"></span>
+          <div class="pres-wrap pres-hero__in">
+            <div class="pres-hero__text">
+              <img class="pres-icon" src="/assets/img/icone.svg" alt="" width="72" height="72" />
+              <span class="pres-eyebrow">Pour qui cherche un emploi en France</span>
+              <h1>Jobbly</h1>
+              <p class="pres-lead">Les offres d'emploi de cinq sites en une seule liste — sans doublons ni liens morts — et le suivi de tes candidatures, au même endroit.</p>
+              <div class="pres-actions">
+                <a class="pres-cta" href="/offres.html">Ouvrir l'appli<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <a class="pres-ghost" href="#fonctions">Voir ce qu'elle fait</a>
+              </div>
+              <p class="pres-avail"><strong>Dans le navigateur, sans rien installer.</strong> Jobbly est un site : pas d'appli à télécharger. Pas encore sur Google Play ni sur l'App Store.</p>
+            </div>
+            <figure class="pres-hero__shot">
+              <img class="pres-shot-light" src="/assets/apercu/offers-fr-light.webp" alt="L&#x27;écran Mes offres : le bandeau bleu avec le bouton Actualiser, les compteurs, les filtres, puis des cartes d&#x27;offres de plombier avec leurs badges de source, Nouveau et Alternance." width="390" height="844" />
+              <img class="pres-shot-dark" src="/assets/apercu/offers-fr-dark.webp" alt="L&#x27;écran Mes offres : le bandeau bleu avec le bouton Actualiser, les compteurs, les filtres, puis des cartes d&#x27;offres de plombier avec leurs badges de source, Nouveau et Alternance." width="390" height="844" loading="lazy" />
+            </figure>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="fonctions" aria-labelledby="fonctions-t">
+          <div class="pres-wrap">
+            <h2 id="fonctions-t">Ce que fait Jobbly</h2>
+            <p class="pres-intro">Chercher un emploi, c'est ouvrir cinq sites, retrouver la même annonce sur trois d'entre eux, cliquer sur des liens qui ne mènent plus à rien, et noter à part où l'on a postulé. Jobbly fait la tournée pour toi.</p>
+            <ul class="pres-features">
+              <li class="pres-feature">
+                <span class="pres-i tone-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z"/><path d="m20 20-4-4"/></svg></span>
+                <h3>Cinq sources d'un coup</h3>
+                <p>France Travail, La Bonne Alternance, Jooble, Careerjet et Adzuna, interrogés ensemble avec tes mots-clés et tes villes, à chaque fois que tu appuies sur « Actualiser ».</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-2"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3v6a6 6 0 0 0 6 6h0a6 6 0 0 1 6 6"/><path d="M18 3v6a6 6 0 0 1-6 6"/></svg></span>
+                <h3>Les doublons fusionnés</h3>
+                <p>La même offre vue sur plusieurs sites ne fait qu'une carte, marquée « Multi-sites », avec tous ses liens. Deux postes différents de la même entreprise restent deux offres.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-4"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/><path d="m3 3 18 18"/></svg></span>
+                <h3>Les liens morts écartés</h3>
+                <p>Chaque lien est vérifié avant d'être montré : une annonce expirée ou retirée n'arrive pas dans ta liste. Une offre que tu suis reste, et l'écran dit que son lien est mort.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-3"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 3 3 5-6"/></svg></span>
+                <h3>Le suivi des candidatures</h3>
+                <p>Pour chaque offre : à traiter, postulé, en attente, entretien, accepté, refusé ou ignoré, enregistré tout de suite. Les nouvelles depuis ta dernière visite portent « Nouveau ».</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span>
+                <h3>Tes réglages, tes filtres</h3>
+                <p>Mots-clés, villes avec un rayon, types de contrat. Filtre par statut, par source, l'alternance seule ou les nouvelles seules, et masque une fausse offre pour de bon.</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pres-section" id="etapes" aria-labelledby="etapes-t">
+          <div class="pres-wrap">
+            <h2 id="etapes-t">Comment ça marche</h2>
+            <ol class="pres-steps">
+              <li><h3>Connecte-toi</h3><p>Avec ton compte Lorderis — le même pour toutes nos apps —, par e-mail ou avec Google.</p></li>
+              <li><h3>Choisis quoi chercher</h3><p>Jusqu'à dix mots-clés et cinq villes, chacune avec son rayon, et les types de contrat si tu veux en écarter.</p></li>
+              <li><h3>Actualise, puis suis</h3><p>Jobbly rapporte les offres, sans doublons ni liens morts ; tu ouvres, tu postules, tu notes où tu en es.</p></li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="apercu" aria-labelledby="apercu-t">
+          <div class="pres-wrap">
+            <h2 id="apercu-t">En images</h2>
+            <p class="pres-shots-note">Captures de l'appli réelle, avec des données de démonstration.</p>
+            <ul class="pres-shots">
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/offers-fr-light.webp" alt="L&#x27;écran Mes offres : le bandeau bleu avec le bouton Actualiser, les compteurs, les filtres, puis des cartes d&#x27;offres de plombier avec leurs badges de source, Nouveau et Alternance." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/offers-fr-dark.webp" alt="L&#x27;écran Mes offres : le bandeau bleu avec le bouton Actualiser, les compteurs, les filtres, puis des cartes d&#x27;offres de plombier avec leurs badges de source, Nouveau et Alternance." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>Mes offres</strong>La liste, ses filtres, et le statut de chaque candidature.</figcaption>
+                </figure>
+              </li>
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/offer-fr-light.webp" alt="Le détail d&#x27;une offre : titre, entreprise, lieu, contrat, date, le bouton Voir l&#x27;offre, les autres sites où elle paraît, la description, puis le statut, Fausse offre et Ignorer." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/offer-fr-dark.webp" alt="Le détail d&#x27;une offre : titre, entreprise, lieu, contrat, date, le bouton Voir l&#x27;offre, les autres sites où elle paraît, la description, puis le statut, Fausse offre et Ignorer." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>Le détail</strong>La description, le lien de l'offre et ceux des autres sites.</figcaption>
+                </figure>
+              </li>
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/settings-fr-light.webp" alt="L&#x27;écran Réglages : des mots-clés en pastilles, deux villes avec leur rayon de 30 kilomètres, la recherche de commune et les types de contrat à cocher." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/settings-fr-dark.webp" alt="L&#x27;écran Réglages : des mots-clés en pastilles, deux villes avec leur rayon de 30 kilomètres, la recherche de commune et les types de contrat à cocher." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>Réglages</strong>Mots-clés, villes avec leur rayon, types de contrat.</figcaption>
+                </figure>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pres-section" id="donnees" aria-labelledby="donnees-t">
+          <div class="pres-wrap">
+            <h2 id="donnees-t">Tes données</h2>
+            <ul class="pres-points">
+              <li><span class="pres-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></span><span><strong>Rangées avec ton compte.</strong> Tes réglages, tes offres et leurs statuts sont gardés dans le compte Lorderis, chez Supabase, en France ; toi seul y as accès.</span></li>
+              <li><span class="pres-i tone-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></span><span><strong>Ce qui part vers les sites d'emploi.</strong> Tes mots-clés et tes villes, envoyés par notre serveur avec nos propres clés : jamais ton adresse e-mail ni ton identifiant.</span></li>
+              <li><span class="pres-i tone-4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/><path d="m3 3 18 18"/></svg></span><span><strong>Les liens, vérifiés par notre serveur.</strong> Le cache commun de ces vérifications ne garde qu'une empreinte de l'adresse et un verdict, 30 jours au plus, sans rien qui te concerne.</span></li>
+              <li><span class="pres-i tone-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2 4 6v6c0 5 3.4 7.5 8 10 4.6-2.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span><strong>Ni publicité, ni traceur.</strong> Aucune mesure d'audience, aucun cookie, aucune intelligence artificielle.</span></li>
+              <li><span class="pres-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></span><span><strong>Effaçables d'un geste.</strong> « Supprimer mes données Jobbly », dans les réglages, efface tout ce que Jobbly garde à ton nom.</span></li>
+            </ul>
+            <p class="pres-more">Tout le détail — ce qui est gardé, où, combien de temps, et les droits de chacun — est dans la <a href="/confidentialite.html">politique de confidentialité</a>.</p>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="questions" aria-labelledby="questions-t">
+          <div class="pres-wrap">
+            <h2 id="questions-t">Questions fréquentes</h2>
+            <div class="pres-faq">
+              <details>
+                <summary>C'est payant ?</summary>
+                <p>Non, Jobbly est gratuit. Pour que tout le monde en profite, le nombre de recherches est limité à 30 par jour et par compte ; les offres déjà trouvées restent consultables.</p>
+              </details>
+              <details>
+                <summary>Jobbly cherche-t-il tout seul ?</summary>
+                <p>Non : la recherche part quand tu appuies sur « Actualiser ». Elle dure de quelques secondes à une minute, et l'écran dit ensuite combien d'offres sont arrivées, combien de doublons ont été fusionnés, et quelle source n'a pas répondu.</p>
+              </details>
+              <details>
+                <summary>Pourquoi une offre a-t-elle disparu ?</summary>
+                <p>Parce que les sites ne la publient plus, ou que son lien ne mène plus à rien. Une offre que tu suis — un statut posé — reste, marquée « Plus publiée » ou « Lien mort » ; les autres s'effacent, tout de suite si leur lien est mort, au bout de 30 jours sinon.</p>
+              </details>
+              <details>
+                <summary>Qui voit mes candidatures ?</summary>
+                <p>Toi seul. Elles sont rangées avec ton compte Lorderis, et la base refuse de les montrer à un autre compte.</p>
+              </details>
+              <details>
+                <summary>J'utilisais le script Jobbly sous Windows : et maintenant ?</summary>
+                <p>Le site le remplace, avec les mêmes sources et les mêmes statuts, sans rien à installer. Tes anciens statuts ne sont pas repris : ils vivaient dans un fichier de ton ordinateur.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <section class="pres-section pres-final" aria-labelledby="final-t">
+          <div class="pres-wrap">
+            <h2 id="final-t">Prêt à essayer ?</h2>
+            <div class="pres-actions">
+              <a class="pres-cta" href="/offres.html">Ouvrir l'appli<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div data-lang-block="en" lang="en">
+        <section class="pres-hero">
+          <span class="pres-blob" aria-hidden="true"></span>
+          <div class="pres-wrap pres-hero__in">
+            <div class="pres-hero__text">
+              <img class="pres-icon" src="/assets/img/icone.svg" alt="" width="72" height="72" />
+              <span class="pres-eyebrow">For anyone looking for a job in France</span>
+              <h1>Jobbly</h1>
+              <p class="pres-lead">Job offers from five sites in a single list — without duplicates or dead links — and your applications tracked in the same place.</p>
+              <div class="pres-actions">
+                <a class="pres-cta" href="/offres.html">Open the app<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <a class="pres-ghost" href="#en-fonctions">See what it does</a>
+              </div>
+              <p class="pres-avail"><strong>In your browser, nothing to install.</strong> Jobbly is a website: there is no app to download. Not on Google Play or the App Store yet.</p>
+            </div>
+            <figure class="pres-hero__shot">
+              <img class="pres-shot-light" src="/assets/apercu/offers-en-light.webp" alt="The My offers screen: the blue banner with the Refresh button, the counters, the filters, then plumber job cards with their source, New and Work-study badges." width="390" height="844" />
+              <img class="pres-shot-dark" src="/assets/apercu/offers-en-dark.webp" alt="The My offers screen: the blue banner with the Refresh button, the counters, the filters, then plumber job cards with their source, New and Work-study badges." width="390" height="844" loading="lazy" />
+            </figure>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="en-fonctions" aria-labelledby="en-fonctions-t">
+          <div class="pres-wrap">
+            <h2 id="en-fonctions-t">What Jobbly does</h2>
+            <p class="pres-intro">Looking for a job means opening five sites, finding the same listing on three of them, clicking links that lead nowhere, and noting elsewhere where you applied. Jobbly does the rounds for you.</p>
+            <ul class="pres-features">
+              <li class="pres-feature">
+                <span class="pres-i tone-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z"/><path d="m20 20-4-4"/></svg></span>
+                <h3>Five sources at once</h3>
+                <p>France Travail, La Bonne Alternance, Jooble, Careerjet and Adzuna, searched together with your keywords and cities, every time you press “Refresh”.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-2"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 3v6a6 6 0 0 0 6 6h0a6 6 0 0 1 6 6"/><path d="M18 3v6a6 6 0 0 1-6 6"/></svg></span>
+                <h3>Duplicates merged</h3>
+                <p>The same offer seen on several sites is a single card, marked “Multi-site”, with all its links. Two different jobs at the same company stay two offers.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-4"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/><path d="m3 3 18 18"/></svg></span>
+                <h3>Dead links removed</h3>
+                <p>Every link is checked before it is shown: an expired or withdrawn listing does not reach your list. An offer you follow stays, and the screen says its link is dead.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-3"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 3 3 5-6"/></svg></span>
+                <h3>Applications tracked</h3>
+                <p>For each offer: to review, applied, waiting, interview, accepted, rejected or ignored, saved at once. Offers new since your last visit are marked “New”.</p>
+              </li>
+              <li class="pres-feature">
+                <span class="pres-i tone-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span>
+                <h3>Your settings, your filters</h3>
+                <p>Keywords, cities with a radius, contract types. Filter by status, by source, work-study only or new only, and hide a fake offer for good.</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pres-section" id="en-etapes" aria-labelledby="en-etapes-t">
+          <div class="pres-wrap">
+            <h2 id="en-etapes-t">How it works</h2>
+            <ol class="pres-steps">
+              <li><h3>Sign in</h3><p>With your Lorderis account — the same one for all our apps —, by email or with Google.</p></li>
+              <li><h3>Choose what to look for</h3><p>Up to ten keywords and five cities, each with its radius, and contract types if you want to leave some out.</p></li>
+              <li><h3>Refresh, then follow up</h3><p>Jobbly brings the offers back, without duplicates or dead links; you open, you apply, you note where you stand.</p></li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="en-apercu" aria-labelledby="en-apercu-t">
+          <div class="pres-wrap">
+            <h2 id="en-apercu-t">Screenshots</h2>
+            <p class="pres-shots-note">Screenshots of the real app, with demo data.</p>
+            <ul class="pres-shots">
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/offers-en-light.webp" alt="The My offers screen: the blue banner with the Refresh button, the counters, the filters, then plumber job cards with their source, New and Work-study badges." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/offers-en-dark.webp" alt="The My offers screen: the blue banner with the Refresh button, the counters, the filters, then plumber job cards with their source, New and Work-study badges." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>My offers</strong>The list, its filters, and the status of each application.</figcaption>
+                </figure>
+              </li>
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/offer-en-light.webp" alt="An offer&#x27;s details: title, company, place, contract, date, the See the offer button, the other sites where it appears, the description, then the status, Fake offer and Ignore." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/offer-en-dark.webp" alt="An offer&#x27;s details: title, company, place, contract, date, the See the offer button, the other sites where it appears, the description, then the status, Fake offer and Ignore." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>The details</strong>The description, the offer's link and those of the other sites.</figcaption>
+                </figure>
+              </li>
+              <li>
+                <figure class="pres-shot">
+                  <img class="pres-shot-light" src="/assets/apercu/settings-en-light.webp" alt="The Settings screen: keywords as chips, two cities with their 30-kilometre radius, the town search and the contract types to tick." width="390" height="844" loading="lazy" />
+                  <img class="pres-shot-dark" src="/assets/apercu/settings-en-dark.webp" alt="The Settings screen: keywords as chips, two cities with their 30-kilometre radius, the town search and the contract types to tick." width="390" height="844" loading="lazy" />
+                  <figcaption><strong>Settings</strong>Keywords, cities with their radius, contract types.</figcaption>
+                </figure>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="pres-section" id="en-donnees" aria-labelledby="en-donnees-t">
+          <div class="pres-wrap">
+            <h2 id="en-donnees-t">Your data</h2>
+            <ul class="pres-points">
+              <li><span class="pres-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></span><span><strong>Stored with your account.</strong> Your settings, your offers and their statuses are kept in your Lorderis account, at Supabase, in France; only you can reach them.</span></li>
+              <li><span class="pres-i tone-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></span><span><strong>What goes to the job sites.</strong> Your keywords and cities, sent by our server with our own keys: never your email address or your identifier.</span></li>
+              <li><span class="pres-i tone-4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/><path d="m3 3 18 18"/></svg></span><span><strong>Links, checked by our server.</strong> The shared cache of these checks keeps only a fingerprint of the address and a verdict, for 30 days at most, with nothing about you.</span></li>
+              <li><span class="pres-i tone-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2 4 6v6c0 5 3.4 7.5 8 10 4.6-2.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span><strong>No ads, no trackers.</strong> No audience measurement, no cookie, no artificial intelligence.</span></li>
+              <li><span class="pres-i tone-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></span><span><strong>Erased in one go.</strong> “Delete my Jobbly data”, in the settings, erases everything Jobbly keeps in your name.</span></li>
+            </ul>
+            <p class="pres-more">All the details — what is kept, where, for how long, and everyone's rights — are in the <a href="/confidentialite.html?lang=en">privacy policy</a>.</p>
+          </div>
+        </section>
+
+        <section class="pres-section pres-section--band" id="en-questions" aria-labelledby="en-questions-t">
+          <div class="pres-wrap">
+            <h2 id="en-questions-t">Frequently asked questions</h2>
+            <div class="pres-faq">
+              <details>
+                <summary>Does it cost anything?</summary>
+                <p>No, Jobbly is free. So that everyone can use it, searches are limited to 30 per day and per account; the offers already found stay available.</p>
+              </details>
+              <details>
+                <summary>Does Jobbly search on its own?</summary>
+                <p>No: the search starts when you press “Refresh”. It takes a few seconds to a minute, and the screen then says how many offers arrived, how many duplicates were merged, and which source did not answer.</p>
+              </details>
+              <details>
+                <summary>Why did an offer disappear?</summary>
+                <p>Because the sites no longer publish it, or its link leads nowhere. An offer you follow — with a status set — stays, marked “No longer published” or “Dead link”; the others are erased, at once if their link is dead, after 30 days otherwise.</p>
+              </details>
+              <details>
+                <summary>Who sees my applications?</summary>
+                <p>Only you. They are stored with your Lorderis account, and the database refuses to show them to any other account.</p>
+              </details>
+              <details>
+                <summary>I used the Jobbly script on Windows: what now?</summary>
+                <p>The site replaces it, with the same sources and statuses, and nothing to install. Your old statuses are not carried over: they lived in a file on your computer.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <section class="pres-section pres-final" aria-labelledby="en-final-t">
+          <div class="pres-wrap">
+            <h2 id="en-final-t">Ready to try it?</h2>
+            <div class="pres-actions">
+              <a class="pres-cta" href="/offres.html">Open the app<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <nav class="pres-links" aria-label="Pages légales" data-lang-block="fr" lang="fr">
+      <a href="/confidentialite.html">Confidentialité</a>
+    </nav>
+    <footer class="lorderis-footer" aria-label="Lorderis" data-lang-block="fr" lang="fr">
+      <a class="lorderis-footer__brand" href="https://lorderis.dev/">Un projet Lorderis</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://account.lorderis.dev/">Mon compte</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://jobbly.lorderis.dev/confidentialite.html">Confidentialité</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://lorderis.dev/#projects">Nos autres projets</a>
+    </footer>
+    <nav class="pres-links" aria-label="Legal pages" data-lang-block="en" lang="en">
+      <a href="/confidentialite.html?lang=en">Privacy</a>
+    </nav>
+    <footer class="lorderis-footer" aria-label="Lorderis" data-lang-block="en" lang="en">
+      <a class="lorderis-footer__brand" href="https://lorderis.dev/">A Lorderis project</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://account.lorderis.dev/">My account</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://jobbly.lorderis.dev/confidentialite.html">Privacy</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://lorderis.dev/#projects">Our other projects</a>
+    </footer>
+  </body>
+</html>
