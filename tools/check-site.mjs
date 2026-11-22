@@ -354,6 +354,45 @@ async function expectText(name, page, sel, re, label) {
   }
 }
 
+/** Le pied de page LordEris, celui de lorderis.dev (gabarit d'Account-LordEris,
+ *  reference/footer/) : un seul visible, textes du kit dans la langue, liens
+ *  dans l'ordre, « Confidentialité » vers la politique de Jobbly, « Mon
+ *  compte » gardé, logo chargé, bandeau sombre dans les deux thèmes. */
+const FOOTER_LINKS = ['https://lorderis.dev/', 'https://github.com/LordEris', 'https://discord.lorderis.dev',
+  'https://fiverr.lorderis.dev', 'https://builtbybit.com/members/lorderis.529266/#recent-content',
+  'https://jobbly.lorderis.dev/confidentialite.html', 'https://account.lorderis.dev/']
+const FOOTER_TEXT = {
+  fr: { copy: '© 2026 LordEris. Développeur full-stack & Minecraft.', privacy: 'Confidentialité', account: 'Mon compte' },
+  en: { copy: '© 2026 LordEris. Full-stack & Minecraft developer.', privacy: 'Privacy policy', account: 'My account' },
+}
+async function checkFooter(name, page, lang, theme) {
+  const f = await page.evaluate(() => {
+    const all = [...document.querySelectorAll('footer.lorderis-footer')]
+    const shown = all.filter((el) => el.offsetParent !== null || getComputedStyle(el).display !== 'none' && el.getClientRects().length)
+    const el = shown[0]
+    if (!el) return { shown: 0 }
+    const img = el.querySelector('.lorderis-footer__brand img')
+    return {
+      shown: shown.length,
+      copy: el.querySelector('.lorderis-footer__copy')?.textContent.trim(),
+      hrefs: [...el.querySelectorAll('a')].map((a) => a.getAttribute('href')),
+      texts: [...el.querySelectorAll('a')].map((a) => a.textContent.trim()),
+      logo: !!img && img.complete && img.naturalWidth > 0,
+      bg: getComputedStyle(el).backgroundColor,
+    }
+  })
+  if (f.shown !== 1) return fail(name, `pied de page LordEris : ${f.shown} visible(s) au lieu de 1`)
+  const want = FOOTER_TEXT[lang]
+  if (f.copy !== want.copy) fail(name, `pied de page : « ${f.copy} »`)
+  if (JSON.stringify(f.hrefs) !== JSON.stringify(FOOTER_LINKS)) fail(name, 'pied de page, liens : ' + f.hrefs.join(' '))
+  const texts = ['LordEris', 'GitHub', 'Discord', 'Fiverr', 'BuiltByBit', want.privacy, want.account]
+  if (JSON.stringify(f.texts) !== JSON.stringify(texts)) fail(name, 'pied de page, libellés : ' + f.texts.join(' · '))
+  if (!f.logo) fail(name, 'pied de page : logo non chargé')
+  const bg = theme === 'dark' ? 'rgb(10, 10, 16)' : 'rgb(17, 24, 39)'
+  if (f.bg !== bg) fail(name, `pied de page : fond ${f.bg} au lieu de ${bg}`)
+  ok(name, 'pied de page LordEris')
+}
+
 // ═══ 1. Chaque page, chaque format, chaque thème, chaque langue ═══════════
 for (const width of [390, 1280]) {
   for (const theme of ['light', 'dark']) {
@@ -378,6 +417,7 @@ for (const width of [390, 1280]) {
           return out
         })
         for (const b of broken) fail(`présentation ${tag}`, 'image absente : ' + b)
+        await checkFooter(`présentation ${tag}`, page, lang, theme)
         await shot(page, `presentation-${tag}.png`)
       })
       await withPage(`politique ${tag}`, { width, theme, lang }, async (page) => {
@@ -385,6 +425,7 @@ for (const width of [390, 1280]) {
         await page.waitForSelector('.lorderis-toggles:not([hidden])')
         const n = await page.locator(`[data-lang-block="${lang}"] .legal-body > section`).count()
         if (n !== 15) fail(`politique ${tag}`, `${n} sections au lieu de 15`)
+        await checkFooter(`politique ${tag}`, page, lang, theme)
         await shot(page, `confidentialite-${tag}.png`)
       })
       await withPage(`appli ${tag}`, { width, theme, lang }, async (page) => {
@@ -392,6 +433,7 @@ for (const width of [390, 1280]) {
         await page.goto(base + '/offres.html')
         await page.waitForSelector('#viewSignIn:not([hidden])')
         await page.waitForSelector('#googleGis:not([hidden]) iframe', { timeout: 6000 }).then(() => ok(name, 'bouton Google monté'), () => fail(name, 'bouton Google non monté'))
+        await checkFooter(name, page, lang, theme)
         await shot(page, `connexion-${tag}.png`)
         await signIn(page)
         await page.waitForSelector('#viewOffers:not([hidden]) .card')
@@ -698,14 +740,15 @@ if (!ONLY || ONLY.test('contrastes')) {
 const kit = process.env.ACCOUNT_LORDERIS || path.join(root, '..', 'account-lorderis')
 if ((!ONLY || ONLY.test('copies')) && fs.existsSync(path.join(kit, 'reference'))) {
   console.log('· copies du kit (' + kit + ')')
-  const same = (mine, ref) => fs.readFileSync(path.join(root, mine), 'utf8') === fs.readFileSync(path.join(kit, ref), 'utf8')
+  const same = (mine, ref) => fs.readFileSync(path.join(root, mine)).equals(fs.readFileSync(path.join(kit, ref)))
   for (const [mine, ref] of [
     ['assets/css/presentation.css', 'reference/presentation/presentation.css'],
     ['assets/js/presentation.js', 'reference/presentation/presentation.js'],
     ['assets/css/legal.css', 'reference/privacy/legal.css'],
     ['assets/js/toc-spy.js', 'reference/privacy/toc-spy.js'],
     ['assets/css/lorderis-toggles.css', 'reference/toggles/lorderis-toggles.css'],
-    ['assets/css/lorderis-footer.css', 'assets/css/lorderis-footer.css'],
+    ['assets/css/lorderis-footer.css', 'reference/footer/lorderis-footer.css'],
+    ['assets/img/lorderis-logo.png', 'reference/footer/lorderis-logo.png'],
   ]) {
     if (same(mine, ref)) ok('copies', mine); else fail('copies', `${mine} s'écarte de ${ref}`)
   }

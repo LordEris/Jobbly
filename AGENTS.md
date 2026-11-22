@@ -67,8 +67,8 @@ celui du projet Supabase commun, dont le dépôt de référence est
 [Account-LordEris](https://github.com/LordEris/Account-LordEris) : même
 e-mail, même mot de passe, même compte Google partout, gérés sur
 `account.lorderis.dev`. Une app ne crée jamais son propre système de comptes.
-Les textes de connexion, d'inscription et de suppression, et la ligne « Un
-projet Lorderis » en bas de page sont communs, au mot près.
+Les textes de connexion, d'inscription et de suppression, et le pied de page
+LordEris (celui de lorderis.dev) en bas de page sont communs, au mot près.
 
 **Livrer** : une branche, une pull request, jamais de poussée directe sur la
 branche par défaut. Avant d'ajouter à l'index, relire `git status` : un
@@ -202,10 +202,20 @@ Trois parties, qui ne se mélangent pas :
   `tools/demo-data.mjs` — jamais celles d'une vraie personne.
 - **Les copies du kit ne se retouchent jamais** : `presentation.css`,
   `presentation.js`, `legal.css`, `toc-spy.js`, `lorderis-toggles.css`,
-  `lorderis-footer.css` et le corps de `google-auth.js`. La ligne Lorderis et
-  les boutons ronds prennent l'habit de Jobbly par les variables surchargées
-  dans `jobbly.css`, chargé APRÈS eux. `tools/check-site.mjs` les compare à
-  Account-LordEris quand il est cloné à côté.
+  `lorderis-footer.css` (avec `assets/img/lorderis-logo.png`) et le corps de
+  `google-auth.js`. Les boutons ronds prennent l'habit de Jobbly par les
+  variables surchargées dans `jobbly.css`, chargé APRÈS eux.
+  `tools/check-site.mjs` les compare à Account-LordEris quand il est cloné à
+  côté.
+- **Le pied de page est celui de lorderis.dev, le même dans tous les
+  projets** (décision du propriétaire, 22 novembre 2026 ; gabarit
+  d'Account-LordEris, `reference/footer/`) : logo LordEris, ©, GitHub ·
+  Discord · Fiverr · BuiltByBit · Confidentialité (la politique de Jobbly) ·
+  Mon compte, textes du kit au mot près (`footer.*` de `i18n.js` pour
+  l'appli, blocs FR / EN pour la présentation et la politique). C'est
+  l'exception à la règle des couleurs : il reste sombre dans les deux thèmes
+  et `jobbly.css` n'y touche pas. `tools/check-site.mjs` le relit sur les
+  trois pages.
 
 ### Publier
 

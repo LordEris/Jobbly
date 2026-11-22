@@ -118,14 +118,17 @@ dans son corps (`error.context`) pour en tirer le code. Ensuite :
 
 La liste n'est pas touchée par un échec.
 
-## Langue, thème, ligne Lorderis
+## Langue, thème, pied de page
 
 FR et EN, thème Système / Clair / Sombre, par les deux boutons ronds de
 lorderis.dev (`lorderis-toggles.css`, tel quel ; `prefs.js`), gardés sur
 l'appareil sous `jobbly:prefs`, posés avant le premier rendu par
-`theme-init.js`. La ligne « Un projet Lorderis » garde ses textes et ses
-liens, au mot près, et prend les couleurs de Jobbly par ses quatre variables
-surchargées dans `jobbly.css`, sous les trois sélecteurs du kit.
+`theme-init.js`. En bas des trois pages, le pied de page LordEris, celui de
+lorderis.dev et de tous les projets (gabarit d'Account-LordEris,
+`reference/footer/` : `lorderis-footer.css` et `assets/img/lorderis-logo.png`
+recopiés tels quels) : logo, ©, GitHub, Discord, Fiverr, BuiltByBit,
+Confidentialité vers la politique de Jobbly et Mon compte. Il reste sombre
+dans les deux thèmes, seule exception aux couleurs de Jobbly.
 
 ## Les captures de la présentation
 

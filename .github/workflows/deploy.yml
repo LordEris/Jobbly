@@ -156,7 +156,8 @@ jobs:
                    assets/js/theme-init.js assets/js/prefs.js assets/js/presentation.js assets/js/app.js \
                    assets/js/rules.js assets/js/i18n.js assets/js/supabase.js assets/js/google-auth.js assets/js/toc-spy.js \
                    assets/css/jobbly.css assets/css/presentation.css assets/css/legal.css \
-                   assets/css/lorderis-footer.css assets/css/lorderis-toggles.css assets/img/icone.svg; do
+                   assets/css/lorderis-footer.css assets/css/lorderis-toggles.css assets/img/icone.svg \
+                   assets/img/lorderis-logo.png; do
             [ -f "_site/$f" ] || fail "_site/$f absent"
           done
           # Chaque fichier qu'une page cite est dans le site.
