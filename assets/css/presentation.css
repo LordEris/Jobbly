@@ -131,7 +131,7 @@
 .pres-final .pres-actions{justify-content:center;}
 .pres-final .pres-intro{margin-left:auto;margin-right:auto;}
 
-/* ── Pied : les pages légales, puis la ligne Lorderis du kit ─ */
+/* ── Pied : les conditions et les mentions légales, s'il y en a (la politique est dans le pied de page LordEris) ─ */
 .pres-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;max-width:var(--lp-wrap,1180px);margin:0 auto;padding:24px var(--lp-gutter,24px) 4px;box-sizing:border-box;font-size:14px;}
 .pres-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--lp-accent-ink,inherit);font-weight:600;text-decoration:underline;text-underline-offset:2px;}
 

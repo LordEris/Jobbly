@@ -35,13 +35,15 @@ const state = {
   settingsError: false,
   offers: null,            // null : pas lues ; [] : aucune
   offersError: false,
-  filters: { status: 'all', source: 'all', alt: false, onlyNew: false },
+  filters: { status: 'all', source: 'all', alt: false, onlyNew: false, onlySalary: false },
   showAllGone: false,
+  showUnderSalary: false, // montrer quand même les offres sous le salaire minimum
   searching: false,
   lastSearch: null,        // le dernier résultat de recherche, affiché
   draft: null,             // les réglages en cours d'édition
   dirty: false,
   firstSettings: false,
+  salaryError: null,       // le salaire minimum tapé ne se lit pas (code)
 }
 
 // ── Petits outils de DOM, sans innerHTML ───────────────────────────────────
@@ -268,7 +270,7 @@ async function loadApp(session) {
 
 async function loadSettings() {
   try {
-    const { data, error } = await state.sb.from('settings').select('keywords,locations,contract_types,updated_at').maybeSingle()
+    const { data, error } = await state.sb.from('settings').select('keywords,locations,contract_types,min_salary,updated_at').maybeSingle()
     if (error) throw error
     state.settings = R.readSettings(data)
     state.settingsError = false
@@ -312,7 +314,8 @@ function metaLine() {
   if (!s) return t('offers.meta_none')
   const kw = s.keywords.join(' · ')
   const loc = s.locations.map((l) => `${l.city} (${t('settings.radius_km', { n: l.radius })})`).join(' · ')
-  return [kw, loc].filter(Boolean).join('  |  ')
+  const pay = s.minSalary !== null ? t('offers.meta_salary', { amount: R.formatSalary({ min: s.minSalary, max: null }, lang()) }) : ''
+  return [kw, loc, pay].filter(Boolean).join('  |  ')
 }
 
 function sourceBadge(name) {
@@ -336,6 +339,16 @@ function metaRows(o, detail) {
   if (o.company) rows.push(row('🏢', t('offer.company'), o.company))
   if (o.location) rows.push(row('📍', t('offer.location'), o.location))
   if (o.contract) rows.push(row('📄', t('offer.contract'), o.contract))
+  const pay = R.formatSalary(o.salary, lang())
+  if (pay) {
+    rows.push(el('div', { class: 'meta-row' }, el('span', { class: 'mi', 'aria-hidden': 'true', text: '💶' }), el('span', { class: 'visually-hidden', text: t('offer.salary') + ' : ' }),
+      el('span', { text: t('offer.salary_month', { amount: pay }) }),
+      detail && o.salary.label ? el('small', { class: 'muted', text: ' — ' + t('offer.salary_source', { text: o.salary.label }) }) : null))
+  } else if (o.salary && o.salary.label) {
+    rows.push(row('💶', t('offer.salary'), o.salary.label))
+  } else if (detail) {
+    rows.push(el('div', { class: 'meta-row muted' }, el('span', { class: 'mi', 'aria-hidden': 'true', text: '💶' }), el('span', { text: t('offer.salary_none') })))
+  }
   if (o.date) rows.push(el('div', { class: 'meta-row' }, el('span', { class: 'mi', 'aria-hidden': 'true', text: '📅' }), el('span', { text: t('offer.published', { date: R.formatDay(o.date, lang()) }) })))
   if (detail && o.expires) rows.push(el('div', { class: 'meta-row' }, el('span', { class: 'mi', 'aria-hidden': 'true', text: '⏳' }), el('span', { text: t('offer.expires', { date: R.formatDay(o.expires, lang()) }) })))
   if (detail && o.goneAt) rows.push(el('div', { class: 'meta-row' }, el('span', { class: 'mi', 'aria-hidden': 'true', text: '⌛' }), el('span', { text: t('offer.gone', { date: R.formatDay(o.goneAt, lang()) }) })))
@@ -428,15 +441,26 @@ function renderOffers() {
   const moreRow = el('div', { class: 'filter-row', role: 'group', 'aria-label': t('offers.filter_more') },
     el('span', { class: 'filter-label', 'aria-hidden': 'true', text: t('offers.filter_more') }),
     chip('★ ' + t('offers.only_alt'), f.alt, () => setF({ alt: !f.alt })),
-    chip(t('offers.only_new'), f.onlyNew, () => setF({ onlyNew: !f.onlyNew })))
+    chip(t('offers.only_new'), f.onlyNew, () => setF({ onlyNew: !f.onlyNew })),
+    chip('💶 ' + t('offers.only_salary'), f.onlySalary, () => setF({ onlySalary: !f.onlySalary })))
   body.append(el('div', { class: 'filters', role: 'region', 'aria-label': t('offers.filters') }, statusRow, sourceRow, moreRow))
 
-  const filtered = R.sortOffers(R.filterOffers(all, { ...f, lastVisit: state.lastVisit }))
+  const minSalary = state.settings ? state.settings.minSalary : null
+  const ff = { ...f, lastVisit: state.lastVisit, minSalary, showUnderSalary: state.showUnderSalary }
+  const filtered = R.sortOffers(R.filterOffers(all, ff))
   const sec = R.splitSections(filtered, state.showAllGone)
+  // Le salaire minimum cache des offres : il le dit, et elles restent à un clic.
+  const under = R.countUnderSalary(all, ff)
+  if (under) {
+    const amount = R.formatSalary({ min: minSalary, max: null }, lang())
+    body.append(el('p', { class: 'muted', role: 'status' },
+      t(state.showUnderSalary ? 'offers.under_salary_shown' : 'offers.under_salary_hidden', { n: under, amount }) + ' ',
+      el('button', { type: 'button', class: 'btn btn--link', text: t(state.showUnderSalary ? 'offers.under_salary_hide' : 'offers.under_salary_show'), onclick: () => { state.showUnderSalary = !state.showUnderSalary; renderOffers() } })))
+  }
   if (!filtered.length) {
     body.append(el('div', { class: 'empty' },
       el('p', { text: t('offers.empty_filtered') }),
-      el('button', { type: 'button', class: 'btn btn--secondary', text: t('offers.reset_filters'), onclick: () => setF({ status: 'all', source: 'all', alt: false, onlyNew: false }) })))
+      el('button', { type: 'button', class: 'btn btn--secondary', text: t('offers.reset_filters'), onclick: () => setF({ status: 'all', source: 'all', alt: false, onlyNew: false, onlySalary: false }) })))
     return
   }
   const section = (title, list) => el('section', { class: 'offers-section' }, el('h2', { text: title }), el('div', { class: 'grid' }, list.map(card)))
@@ -620,8 +644,8 @@ function renderOffer(id) {
 
 function draftFromSettings() {
   const s = state.settings
-  return s ? { keywords: s.keywords.slice(), locations: s.locations.map((l) => ({ ...l })), contractTypes: s.contractTypes.slice() }
-    : { keywords: [], locations: [], contractTypes: [] }
+  return s ? { keywords: s.keywords.slice(), locations: s.locations.map((l) => ({ ...l })), contractTypes: s.contractTypes.slice(), minSalary: s.minSalary }
+    : { keywords: [], locations: [], contractTypes: [], minSalary: null }
 }
 
 function markDirty() {
@@ -631,7 +655,7 @@ function markDirty() {
 }
 
 function renderSettings() {
-  if (!state.draft || !state.dirty) state.draft = draftFromSettings()
+  if (!state.draft || !state.dirty) { state.draft = draftFromSettings(); state.salaryError = null }
   setBox('settingsIntro', state.firstSettings && state.settings === null ? statusBox(null, t('settings.first')) : null)
   setBox('settingsLoadStatus', state.settingsError
     ? statusBox('error', t('offers.settings_error') + ' ', el('button', { type: 'button', class: 'btn btn--link', text: t('common.retry'), onclick: () => void reload() }))
@@ -640,6 +664,7 @@ function renderSettings() {
   renderKeywords()
   renderLocations()
   renderContracts()
+  renderSalary()
   $('settingsDirty').hidden = !state.dirty
 }
 
@@ -741,9 +766,33 @@ function renderContracts() {
   }
 }
 
+function renderSalary() {
+  const input = $('salaryInput')
+  if (document.activeElement !== input && !state.salaryError) input.value = state.draft.minSalary === null ? '' : String(state.draft.minSalary)
+  if (state.salaryError) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid')
+  setBox('salaryStatus', state.salaryError ? statusBox('error', t('settings.err.' + state.salaryError)) : null)
+}
+
+function onSalaryInput() {
+  const input = $('salaryInput')
+  const r = R.parseMinSalary(input.value)
+  markDirty()
+  if (r.error) {
+    state.salaryError = r.error
+    input.setAttribute('aria-invalid', 'true')
+    setBox('salaryStatus', statusBox('error', t('settings.err.' + r.error)))
+    return
+  }
+  state.salaryError = null
+  state.draft.minSalary = r.value
+  input.removeAttribute('aria-invalid')
+  setBox('salaryStatus', null)
+}
+
 async function onSaveSettings(e) {
   e.preventDefault()
   const errors = R.settingsErrors(state.draft)
+  if (state.salaryError && !errors.includes(state.salaryError)) errors.push(state.salaryError)
   if (errors.length) {
     setBox('settingsStatus', statusBox('error', el('ul', null, errors.map((k) => el('li', { text: t('settings.err.' + k) })))))
     return
@@ -801,6 +850,7 @@ function wire() {
   $('forgotBtn').addEventListener('click', () => void onForgot())
   $('refreshBtn').addEventListener('click', () => void refresh())
   $('settingsForm').addEventListener('submit', onSaveSettings)
+  $('salaryInput').addEventListener('input', onSalaryInput)
   $('keywordAdd').addEventListener('click', onAddKeyword)
   $('keywordInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onAddKeyword() } })
   $('citySearch').addEventListener('click', () => void searchCity(true))

@@ -51,6 +51,7 @@ test('France Travail : champs lus, adresse d’origine sinon fiche, identifiant 
     summary: 'Pose de sanitaires .',
     contract: 'Contrat à durée indéterminée',
     ftId: '190XQRM',
+    salary: null,
   });
   assert.equal(out[1].url, 'https://candidat.francetravail.fr/offres/recherche/detail/190XQRN');
   assert.equal(out[1].company, '');

@@ -50,6 +50,7 @@ function o(source: SourceName, truth: string, f: Partial<RawOffer> & { title: st
     summary: f.summary ?? '',
     contract: f.contract ?? '',
     ftId: f.ftId ?? '',
+    salary: f.salary ?? null,
   };
 }
 

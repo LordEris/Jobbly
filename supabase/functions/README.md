@@ -29,6 +29,15 @@ admise en CORS) l'appelle par le bouton « Actualiser ».
    La Bonne Alternance), un budget commun d'environ 60 s, quelques appels
    simultanés par source. Une source qui échoue n'arrête pas les autres.
    Une offre dont l'échéance est passée n'est ni gardée ni comptée.
+   La rémunération annoncée est lue au passage (`salaire.libelle` de France
+   Travail, `salary` de Jooble et Careerjet, `salary_min`/`salary_max`
+   d'Adzuna et de Careerjet ; l'estimation d'Adzuna, `salary_is_predicted`,
+   n'est jamais prise) et ramenée en euros par mois (heure × 151,67, jour ×
+   21,67, semaine × 4,33, année ÷ 12 ; sans unité dite, l'ordre de grandeur ;
+   hors de 400 à 50 000 € par mois, pas gardée). Elle est rangée dans
+   `data.salary` `{label, min, max}` ; un texte sans montant (« Selon
+   profil ») garde son texte, sans nombre. Dans un groupe de doublons, le
+   premier montant lisible dans l'ordre de priorité l'emporte.
 5. **Les doublons** (`rules.ts`, `dedupe`) : trois règles, appliquées dans
    l'ordre — même adresse canonique ; titres normalisés égaux ou semblables
    (≥ 0,85, deux mots au moins) avec entreprises et lieux compatibles ;
