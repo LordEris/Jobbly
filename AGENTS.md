@@ -1,8 +1,11 @@
 # Notes pour les agents
 
 Les deux premières sections sont **communes à tous les dépôts** et identiques
-partout : les modifier, c'est les modifier dans chaque dépôt. Ce qui est propre à
-ce dépôt commence à « Ce dépôt ».
+partout : les modifier, c'est les modifier dans chaque dépôt. Leur source est le
+dossier `common/` de [Workflows](https://github.com/LordEris/workflows), avec les
+autres fichiers communs ; `scripts/sync-common.py` y vérifie un dépôt et le remet
+à jour ([docs/modele-commun.md](https://github.com/LordEris/workflows/blob/main/docs/modele-commun.md)).
+Ce qui est propre à ce dépôt commence à « Ce dépôt ».
 
 ## Organisation commune
 
