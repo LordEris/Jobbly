@@ -127,10 +127,8 @@ jobs:
   deploy:
     name: Envoyer le site
     needs: assemble
-    # PILOTE : épinglé sur le commit de la branche de LordEris/workflows qui
-    # introduit sftp-deploy.yml. À remplacer, une fois cette branche fusionnée
-    # et v1.0.0 étiquetée, par le SHA de l'étiquette.
-    uses: LordEris/workflows/.github/workflows/sftp-deploy.yml@a7fdd6444376efb364f6d68a23595bab23c58158  # v1.0.0
+    # Épinglé sur le commit de main de LordEris/workflows étiqueté v1.0.0.
+    uses: LordEris/workflows/.github/workflows/sftp-deploy.yml@ac3b683fc24355522c2b0906f7bb1186fae890b8  # v1.0.0
     with:
       site_dir: website-jobbly
       # Anciens noms du dossier : aucun, c'est le premier site de Jobbly.
