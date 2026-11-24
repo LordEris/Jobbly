@@ -89,7 +89,9 @@ données). `--apercu` refait les captures de la présentation.
 À chaque push sur `main`, `.github/workflows/deploy.yml` assemble le site
 (liste fermée : les trois pages, `.htaccess`, `assets/`) et l'envoie par SFTP
 dans `website-jobbly/` chez IONOS, puis relit les fichiers envoyés et le site
-publié. Il se lance aussi à la main (Actions → « Deploy to IONOS »), avec
+publié. L'envoi est le workflow réutilisable commun `sftp-deploy.yml` de
+[LordEris/workflows](https://github.com/LordEris/workflows) ; le fichier d'ici
+n'en porte que les paramètres. Il se lance aussi à la main (Actions → « Deploy to IONOS »), avec
 « Test seulement » pour vérifier l'accès sans rien envoyer.
 
 À faire une fois, hors du dépôt :
