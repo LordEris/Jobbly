@@ -122,18 +122,17 @@ DirectoryIndex index.html
 
 # ─── Cache navigateur ─────────────────────────────────────────────────────────
 # Aucun fichier ne porte d'empreinte dans son nom et le déploiement écrase en
-# place : une heure pour HTML, CSS et JS, et `no-cache` pour les captures de
-# la présentation, qui gardent leur nom d'une version à l'autre.
+# place : HTML, CSS et JS sont revalidés à chaque visite (`no-cache`, un 304
+# sans le fichier), comme les captures de la présentation, qui gardent leur
+# nom d'une version à l'autre. Avec une heure de cache, une mise en ligne
+# restait invisible jusqu'à une heure — et une page neuve pouvait tourner avec
+# l'ancien app.js.
 <IfModule mod_expires.c>
   ExpiresActive On
-  ExpiresByType text/html                "access plus 1 hour"
-  ExpiresByType text/css                 "access plus 1 hour"
-  ExpiresByType application/javascript   "access plus 1 hour"
-  ExpiresByType text/javascript          "access plus 1 hour"
   ExpiresByType image/svg+xml            "access plus 1 day"
 </IfModule>
 <IfModule mod_headers.c>
-  <FilesMatch "\.webp$">
+  <FilesMatch "\.(html|css|js|webp)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>
