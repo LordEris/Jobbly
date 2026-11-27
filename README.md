@@ -103,8 +103,10 @@ publié. Il se lance aussi à la main (Actions → « Deploy to IONOS »), avec
   `jobbly` collé depuis Account-LordEris ; la fonction déployée
   (`supabase functions deploy jobbly-search`) avec ses secrets ;
 - **Google** (projet « Lorderis », client Web) :
-  `https://jobbly.lorderis.dev` dans les *Origines JavaScript autorisées*,
-  sans quoi le bouton « Continuer avec Google » ne s'affiche pas.
+  `https://jobbly.lorderis.dev/connexion-google.html` dans les *URI de
+  redirection autorisés* (sinon Google affiche `redirect_uri_mismatch`) et
+  `https://jobbly.lorderis.dev` dans les *Origines JavaScript autorisées*
+  (sinon l'invite One Tap ne s'affiche pas).
 
 ## Configuration
 
@@ -130,6 +132,7 @@ configurée »).
 Jobbly/
 ├── index.html               # la présentation, servie à /
 ├── offres.html              # l'appli : connexion, offres, détail, réglages
+├── connexion-google.html    # le retour de « Continuer avec Google » (efface le jeton, ramène à l'appli)
 ├── confidentialite.html     # la politique de confidentialité
 ├── .htaccess                # en-têtes, deux CSP (pages / appli), refus des fichiers internes
 ├── assets/
@@ -140,6 +143,7 @@ Jobbly/
 │   ├── js/i18n.js           # textes FR (référence) et EN
 │   ├── js/supabase.js       # client du projet commun (copie de la référence)
 │   ├── js/google-auth.js    # « Continuer avec Google » (copie de la référence)
+│   ├── js/connexion-google.js # le retour de Google (copie à l'octet)
 │   ├── js/theme-init.js     # thème et langue avant le premier rendu
 │   ├── js/prefs.js          # les deux boutons ronds
 │   ├── js/…                 # copies telles quelles : presentation.js, toc-spy.js

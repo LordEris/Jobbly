@@ -10,19 +10,22 @@
 //
 // Ce que la page lui fournit (offres.html, assets/js/app.js) : `window.sb`,
 // le client Supabase ; `window.authPostRedirect()`, la suite d'une connexion
-// réussie, la même qu'après un mot de passe ; le bloc `#googleGis`, `hidden`
-// tant que le bouton n'est pas monté ; le script de Google, chargé à la
-// demande (loadGoogleIdentity, supabase.js) quand l'écran de connexion
-// s'affiche et que Supabase annonce le fournisseur ; l'évènement
-// `lorderis:theme` (prefs.js), au changement de thème et de langue.
+// réussie, la même qu'après un mot de passe ; le bouton `#googleBtn`, qui
+// appelle `start()` (la page part chez Google, dans le même onglet) ;
+// `finish()` au retour de connexion-google.html (assets/js/connexion-google.js,
+// copie à l'octet de reference/web/connexion-google.js) ; le script de
+// Google, chargé à la demande (loadGoogleIdentity, supabase.js) pour la seule
+// invite One Tap, quand l'écran de connexion s'affiche à l'adresse publiée et
+// que Supabase annonce le fournisseur.
 //
-// Le nonce : HACHÉ vers Google (`initialize`), BRUT vers Supabase
-// (`signInWithIdToken`). Les inverser fait échouer chaque connexion sans
-// message utile ; tools/check-site.mjs le tient.
+// Le nonce : HACHÉ vers Google (l'adresse de départ, l'`initialize` de
+// l'invite), BRUT vers Supabase (`signInWithIdToken`). Les inverser fait
+// échouer chaque connexion sans message utile ; tools/check-site.mjs le tient.
 //
-// L'origine https://jobbly.lorderis.dev doit figurer dans les « Origines
-// JavaScript autorisées » du client Web « Lorderis » : sans elle, Google ne
-// dessine pas le bouton, et ne dit rien ailleurs que dans la console.
+// https://jobbly.lorderis.dev/connexion-google.html doit figurer dans les
+// « URI de redirection autorisés » du client Web « Lorderis » (sinon Google
+// affiche redirect_uri_mismatch), et https://jobbly.lorderis.dev dans ses
+// « Origines JavaScript autorisées » (sinon l'invite ne s'affiche pas).
 // ────────────────────────────────────────────────────────────────────────────
 
 ;(function () {
@@ -30,8 +33,16 @@
 
   // Identifiant de client OAuth « Web ». Public par nature : il voyage dans
   // chaque requête d'authentification. Le secret client vit côté Supabase.
-  // Un seul endroit à modifier, comme pour `supabase-init.js`.
   const GOOGLE_CLIENT_ID = '60246268427-jh9chkm80i8m90irtlh03qsselo97n27.apps.googleusercontent.com'
+
+  const AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+  // La page de retour, à la racine de chaque site : la même adresse partout,
+  // déclarée telle quelle chez Google.
+  const RETURN_PATH = '/connexion-google.html'
+  // Les deux clés partagées avec la page de retour (connexion-google.js).
+  const PENDING_KEY = 'lorderis.google.pending'
+  const RESULT_KEY = 'lorderis.google.result'
+  const MAX_AGE_MS = 10 * 60 * 1000
 
   /** SHA-256 → hexadécimal minuscule. */
   async function sha256Hex(input) {
@@ -42,8 +53,8 @@
       .join('')
   }
 
-  /** Nonce aléatoire, 32 octets, en hexadécimal. */
-  function randomNonce() {
+  /** 32 octets aléatoires, en hexadécimal. */
+  function randomHex() {
     const bytes = crypto.getRandomValues(new Uint8Array(32))
     return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('')
   }
@@ -54,157 +65,142 @@
    * en silence.
    */
   async function buildNoncePair() {
-    const raw = randomNonce()
+    const raw = randomHex()
     return { raw, hashed: await sha256Hex(raw) }
   }
 
-  async function onCredential(response, nonceRaw, onError) {
+  /** La langue de la PAGE (fr ou en), pas celle du navigateur. */
+  function pageLang() {
+    return (document.documentElement.lang || 'fr').slice(0, 2) === 'en' ? 'en' : 'fr'
+  }
+
+  /**
+   * Un chemin de la même origine, et rien d'autre : commence par une seule
+   * barre, sans « // » ni « /\ » (que les navigateurs lisent comme une autre
+   * origine), sans caractère de contrôle. Rend `null` sinon.
+   */
+  function sameOriginPath(value) {
+    if (typeof value !== 'string' || value.length > 2048) return null
+    if (!/^\/(?![/\\])/.test(value) || /[\u0000-\u001f\\]/.test(value)) return null
+    return value
+  }
+
+  /** L'adresse de départ chez Google. Pure : tools/test-google.mjs la relit. */
+  function authorizeUrl({ origin, hashedNonce, state, lang }) {
+    const params = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: origin + RETURN_PATH,
+      response_type: 'id_token',
+      scope: 'openid email profile',
+      nonce: hashedNonce,
+      state,
+      // Le choix du compte à chaque fois : un compte Google déjà ouvert dans
+      // le navigateur ne doit pas être pris sans qu'on l'ait désigné.
+      prompt: 'select_account',
+      hl: lang === 'en' ? 'en' : 'fr',
+    })
+    return AUTHORIZE_URL + '?' + params.toString().replace(/\+/g, '%20')
+  }
+
+  // sessionStorage peut lever (stockage bloqué pour le site, navigation
+  // privée stricte) : chaque accès est gardé.
+  function readJson(key) {
+    try {
+      const value = window.sessionStorage.getItem(key)
+      return value ? JSON.parse(value) : null
+    } catch (e) {
+      return null
+    }
+  }
+  function remove(key) {
+    try { window.sessionStorage.removeItem(key) } catch (e) { /* rien à retirer */ }
+  }
+
+  /**
+   * Part chez Google, dans le même onglet. Lève `storage_unavailable` si la
+   * demande ne peut pas être rangée : sans elle, le retour serait refusé, et
+   * mieux vaut le dire avant de partir.
+   */
+  async function start() {
+    if (!GOOGLE_CLIENT_ID) throw new Error('not_configured')
+    const { raw, hashed } = await buildNoncePair()
+    const state = randomHex()
+    const loc = window.location
+    const returnTo = sameOriginPath(loc.pathname + loc.search + loc.hash) || '/'
+    try {
+      window.sessionStorage.setItem(PENDING_KEY, JSON.stringify({ state, rawNonce: raw, returnTo, createdAt: Date.now() }))
+      window.sessionStorage.removeItem(RESULT_KEY)
+    } catch (e) {
+      throw new Error('storage_unavailable')
+    }
+    cancelOneTap()
+    loc.assign(authorizeUrl({ origin: loc.origin, hashedNonce: hashed, state, lang: pageLang() }))
+  }
+
+  async function exchange(token, rawNonce, onError) {
     try {
       const { data, error } = await window.sb.auth.signInWithIdToken({
         provider: 'google',
-        token: response.credential,
-        // BRUT ici. Haché côté GIS. Cf. l'en-tête.
-        nonce: nonceRaw,
+        token,
+        // BRUT ici. Haché côté Google. Cf. l'en-tête.
+        nonce: rawNonce,
       })
-      if (error || !data.user) {
-        onError((error && error.message) || 'Connexion Google refusée.')
-        return
+      if (error || !data || !data.user) {
+        onError('refused', (error && error.message) || '')
+        return false
       }
-      // Même destination que la connexion par mot de passe : `auth.js` expose
-      // sa redirection pour que les deux chemins n'aient pas deux définitions
-      // de « où va-t-on après ».
-      if (typeof window.authPostRedirect === 'function') {
-        await window.authPostRedirect()
-      } else {
-        window.location.href = 'account.html'
-      }
+      // Même destination que la connexion par mot de passe : la page expose
+      // sa suite pour que les deux chemins n'aient pas deux définitions de
+      // « où va-t-on après ».
+      if (typeof window.authPostRedirect === 'function') await window.authPostRedirect()
+      return true
     } catch (e) {
-      onError((e && e.message) || 'Connexion Google impossible.')
+      const message = (e && e.message) || ''
+      onError(/fetch|network|load failed/i.test(message) ? 'network' : 'refused', message)
+      return false
     }
   }
 
   /**
-   * Monte le bouton dans `containerId`. No-op silencieux si l'identifiant n'est
-   * pas configuré ou si le script GIS n'a pas pu se charger (bloqueur, réseau) :
-   * une page d'authentification doit rester utilisable dans les deux cas.
+   * Au chargement de la page : termine une connexion revenue de Google, s'il
+   * y en a une. Rend `false` s'il n'y avait rien à terminer, `true` sinon
+   * (réussie ou non : l'échec est passé à `onError(code, message)`, avec
+   * code = 'cancelled' | 'expired' | 'refused' | 'network'). Le résultat est
+   * consommé une seule fois : les deux clés sont retirées avant tout appel.
    */
-  async function mount(containerId, onError) {
-    if (!GOOGLE_CLIENT_ID) return false
-    const container = document.getElementById(containerId)
-    if (!container) return false
-    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-      console.warn('[google-auth] SDK Google Identity Services indisponible.')
-      return false
-    }
-    if (!window.sb) {
-      console.error('[google-auth] window.sb absent — vérifie l\'ordre des <script>.')
-      return false
-    }
-
-    const { raw, hashed } = await buildNoncePair()
-
-    // UNE SEULE configuration pour le bouton ET l'invite One Tap
-    // (`promptOneTap`, plus bas) : même rappel, même nonce. Une seconde
-    // `initialize` pour l'invite tirerait un second nonce, et le jeton de
-    // l'une partirait vers Supabase avec le nonce brut de l'autre — l'échec
-    // silencieux décrit en tête de fichier.
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      nonce: hashed,
-      callback: (response) => { void onCredential(response, raw, onError) },
-      // Jamais de connexion sans un geste, même quand un seul compte Google
-      // a déjà autorisé le site : l'invite PROPOSE, l'utilisateur choisit.
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      // FedCM : la voie que Chrome impose désormais à One Tap, les cookies
-      // tiers qui la portaient disparaissant. L'invite est alors dessinée par
-      // le navigateur, hors de la page, et ne recouvre plus le formulaire —
-      // c'est ce qui levait l'objection qui l'avait fait écarter.
-      use_fedcm_for_prompt: true,
-      // Safari et Firefox, qui bloquent ces cookies depuis longtemps : la
-      // variante qu'ils savent afficher, plutôt que rien.
-      itp_support: true,
-      // « Se connecter à … avec Google » : la page est un écran de connexion.
-      context: 'signin',
-    })
-    initialized = true
-
-    // `shape` est l'une des quatre valeurs que GIS accepte — rectangular,
-    // square, pill, circle. On prend `pill` parce que tous les boutons du
-    // design system sont en `border-radius:999px` : à `rectangular`, le bouton
-    // Google était le seul angle droit de la page. Le reste des options n'est
-    // pas négociable de la même façon — la marque, le libellé et la typographie
-    // appartiennent à Google et ne se surchargent pas.
-    // LA LARGEUR SE MESURE SUR UN ÉLÉMENT VISIBLE, SINON ELLE VAUT ZÉRO.
-    // `container` vit dans un bloc encore `hidden` — c'est auth.js qui le
-    // révèle, et seulement APRÈS ce montage. `clientWidth` y valait donc
-    // toujours 0, et Google recevait invariablement les 320 px de repli, quelle
-    // que soit la largeur réelle de la carte. Le repli n'était pas un repli :
-    // c'était la seule valeur jamais utilisée.
-    //
-    // On révèle donc le bloc AVANT de mesurer, et on le remasque si le rendu
-    // échoue — l'intention d'origine tient toujours : pas de bouton mort à
-    // l'écran quand Google ne répond pas.
-    //
-    // LE THÈME SUIT CELUI DE LA PAGE (gabarit commun de l'écran de connexion
-    // Lorderis) : `outline` en clair, `filled_black` en sombre. Un bouton noir
-    // figé était le seul aplat sombre d'une page claire. Le bouton est
-    // redessiné quand le thème change (évènement `lorderis:theme` de
-    // theme-init.js) ; le nonce, lui, reste celui de `initialize` ci-dessus.
-    function render() {
-      // 400 px est le maximum accepté par GIS ; au-delà, il rogne lui-même.
-      const largeur = Math.min(400, Math.round(container.getBoundingClientRect().width) || 320)
-      const clair = document.documentElement.getAttribute('data-theme') === 'light'
-      window.google.accounts.id.renderButton(container, {
-        type: 'standard',
-        theme: clair ? 'outline' : 'filled_black',
-        size: 'large',
-        shape: 'pill',
-        text: 'continue_with',
-        logo_alignment: 'left',
-        // « Continuer avec Google » dans la langue de la PAGE (FR ou EN), pas
-        // dans celle du navigateur : sinon un site affiché en anglais montre
-        // un bouton en français, ou l'inverse.
-        locale: (document.documentElement.lang || 'fr').slice(0, 2),
-        width: largeur,
-      })
-    }
-
-    const bloc = container.closest('[hidden]')
-    if (bloc) bloc.hidden = false
-    try {
-      render()
-    } catch (e) {
-      if (bloc) bloc.hidden = true
-      throw e
-    }
-    if (!container.dataset.themeFollow) {
-      container.dataset.themeFollow = '1'
-      document.addEventListener('lorderis:theme', () => {
-        try { render() } catch (e) { console.warn('[google-auth] bouton non redessiné.', e) }
-      })
-    }
-
+  async function finish(onError) {
+    const result = readJson(RESULT_KEY)
+    if (!result) return false
+    const pending = readJson(PENDING_KEY)
+    remove(RESULT_KEY)
+    remove(PENDING_KEY)
+    const fresh = pending && typeof pending.state === 'string' && typeof pending.rawNonce === 'string' &&
+      typeof pending.createdAt === 'number' && Date.now() - pending.createdAt >= 0 && Date.now() - pending.createdAt <= MAX_AGE_MS
+    if (result.error === 'access_denied') { onError('cancelled', ''); return true }
+    if (!fresh || result.state !== pending.state) { onError('expired', ''); return true }
+    if (result.error || typeof result.idToken !== 'string') { onError('refused', String(result.error || '')); return true }
+    await exchange(result.idToken, pending.rawNonce, onError)
     return true
   }
 
   // ── One Tap : l'invite qui propose le compte Google ───────────────────────
-  // Demandée par le propriétaire : l'écran de connexion PROPOSE de lui-même le
-  // choix du compte Google, en plus du bouton, qui reste — le bouton est le
-  // geste explicite, l'invite un raccourci qu'on peut ignorer.
+  // L'écran de connexion PROPOSE de lui-même le compte Google, en plus du
+  // bouton, qui reste le geste explicite ; l'invite est un raccourci qu'on
+  // peut ignorer. Elle est dessinée par Google, dans la page (ou par le
+  // navigateur, sous FedCM) : aucune fenêtre, sauf sous Safari et Firefox,
+  // où Google termine dans la sienne (d'où la COOP de la page de connexion).
   //
   // Quatre règles, toutes tenues ici plutôt que dans chaque page :
-  //   · l'invite n'est demandée qu'APRÈS un montage réussi du bouton :
-  //     c'est `mount()` qui pose la configuration commune (nonce, rappel) ;
+  //   · une seule configuration (`initialize`) pour la page, avec SON nonce ;
   //   · jamais par-dessus une session ouverte : lue avant de demander, et une
-  //     session qui s'ouvre ensuite (mot de passe, bouton) ferme l'invite. Une
+  //     session qui s'ouvre ensuite (mot de passe) ferme l'invite. Une
   //     session illisible compte comme ouverte — dans le doute, on ne
   //     propose rien, le bouton reste là ;
   //   · une fois par page, et plus du tout de la visite (l'onglet) quand
   //     l'utilisateur l'a fermée : la relancer à chaque chargement serait
   //     harceler quelqu'un qui a déjà dit non ;
-  //   · elle se ferme quand on quitte la page (`pagehide`), ce qui couvre
-  //     aussi le retour depuis le cache de navigation.
+  //   · elle se ferme quand on quitte la page (`pagehide`) ou qu'on part
+  //     chez Google par le bouton.
   //
   // L'invite elle-même ne s'éprouve qu'EN LIGNE : Google ne l'affiche que pour
   // une origine déclarée sur le client OAuth, et FedCM n'est pas offert à un
@@ -215,8 +211,6 @@
   let oneTap = null
   let watchingSession = false
 
-  // sessionStorage peut lever (stockage bloqué pour le site) : sans lui, on
-  // retombe sur la seule règle « une fois par page ».
   function oneTapClosedThisVisit() {
     try { return window.sessionStorage.getItem(ONE_TAP_CLOSED_KEY) === '1' } catch (e) { return false }
   }
@@ -224,29 +218,56 @@
     try { window.sessionStorage.setItem(ONE_TAP_CLOSED_KEY, '1') } catch (e) { /* rien à faire */ }
   }
 
+  function gisReady() {
+    return !!(window.google && window.google.accounts && window.google.accounts.id)
+  }
+
   /** Ferme l'invite si elle est ouverte. Sans effet sinon. */
   function cancelOneTap() {
     if (!oneTap) return
-    // Marquée AVANT `cancel()` : GIS rend alors un moment « passé » qu'il ne
-    // faut pas prendre pour un refus de l'utilisateur.
+    // Marquée AVANT `cancel()` : Google rend alors un moment « passé » qu'il
+    // ne faut pas prendre pour un refus de l'utilisateur.
     oneTap.cancelledByPage = true
     oneTap = null
-    try { window.google.accounts.id.cancel() } catch (e) { /* SDK parti : rien à fermer */ }
+    try { window.google.accounts.id.cancel() } catch (e) { /* script parti : rien à fermer */ }
   }
 
   /**
-   * Propose l'invite One Tap. Rend `true` si elle a été demandée à Google —
-   * ce qui ne dit pas qu'elle s'affiche : c'est Google qui en décide (compte
-   * connecté au navigateur, délai après un refus, origine autorisée).
+   * Propose l'invite One Tap. Le script de Google doit être chargé. Rend
+   * `true` si elle a été demandée à Google — ce qui ne dit pas qu'elle
+   * s'affiche : c'est Google qui en décide (compte connecté au navigateur,
+   * délai après un refus, origine autorisée).
    */
-  async function promptOneTap() {
-    if (!initialized || oneTapOffered || oneTapClosedThisVisit()) return false
+  async function promptOneTap(onError) {
+    if (!GOOGLE_CLIENT_ID || !gisReady() || !window.sb) return false
+    if (oneTapOffered || oneTapClosedThisVisit()) return false
     oneTapOffered = true
     try {
       const { data } = await window.sb.auth.getSession()
       if (data && data.session) return false
     } catch (e) {
       return false
+    }
+
+    if (!initialized) {
+      const { raw, hashed } = await buildNoncePair()
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        nonce: hashed,
+        callback: (response) => { void exchange(response && response.credential, raw, onError) },
+        // Jamais de connexion sans un geste, même quand un seul compte Google
+        // a déjà autorisé le site : l'invite PROPOSE, l'utilisateur choisit.
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        // FedCM : la voie que Chrome impose désormais à One Tap ; l'invite est
+        // dessinée par le navigateur, hors de la page.
+        use_fedcm_for_prompt: true,
+        // Safari et Firefox : la variante qu'ils savent afficher, plutôt que rien.
+        itp_support: true,
+        // « Se connecter à … avec Google » : la page est un écran de connexion.
+        context: 'signin',
+      })
+      initialized = true
     }
 
     if (!watchingSession) {
@@ -272,11 +293,18 @@
   }
 
   window.googleAuth = {
-    mount,
+    start,
+    finish,
     promptOneTap,
     cancelOneTap,
+    authorizeUrl,
+    sameOriginPath,
     buildNoncePair,
     sha256Hex,
     isConfigured: () => !!GOOGLE_CLIENT_ID,
+    RETURN_PATH,
+    PENDING_KEY,
+    RESULT_KEY,
+    MAX_AGE_MS,
   }
 })()
