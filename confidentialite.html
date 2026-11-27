@@ -52,7 +52,7 @@
     <span class="eyebrow legal-eyebrow">Légal</span>
     <h1>Politique de confidentialité</h1>
     <p class="lead legal-lead">Ce que Jobbly garde quand tu cherches un emploi, à qui part quoi pour chercher les offres, et comment tout effacer.</p>
-    <span class="updated"><span class="dot"></span>Dernière mise à jour : 22 novembre 2026</span>
+    <span class="updated"><span class="dot"></span>Dernière mise à jour : 25 novembre 2026</span>
   </div>
 </section>
 <section class="legal-section-wrap">
@@ -130,7 +130,7 @@
           <li><strong>Les cinq sites d'emploi</strong> — France Travail, La Bonne Alternance, Jooble, Careerjet et Adzuna — reçoivent, à chaque recherche, tes mots-clés et tes villes (nom, code de commune, position du centre, rayon), et France Travail les types de contrat choisis. La demande part de notre serveur, avec nos propres clés d'accès : <strong>jamais ton adresse e-mail ni ton identifiant</strong>.</li>
           <li><strong>Les sites des annonces</strong> — notre serveur ouvre le lien de chaque offre pour vérifier qu'il mène encore à l'annonce. Cette vérification ne porte aucune donnée te concernant.</li>
           <li><strong>L'API Géo de l'État</strong> (geo.api.gouv.fr) — reçoit le nom de commune que tu tapes dans les réglages, depuis ton navigateur, donc avec ton adresse IP.</li>
-          <li><strong>Google</strong> — sur l'écran de connexion, si la connexion avec Google est activée, la page charge le bouton de Google, qui reçoit ton adresse IP et peut lire ses propres cookies ; si tu choisis « Continuer avec Google », Google confirme ton identité au compte Lorderis.</li>
+          <li><strong>Google</strong> — si tu choisis « Continuer avec Google », la page part chez Google, dans le même onglet : ton navigateur se rend sur <strong>accounts.google.com</strong>, qui reçoit ton adresse IP et ta demande, te laisse choisir ton compte et te renvoie sur la page <code>connexion-google.html</code> du site avec un jeton d'identité, que la page efface aussitôt de l'adresse et que l'appli transmet au compte Lorderis. Sur l'écran de connexion, si la connexion avec Google est activée, la page charge aussi le script de Google, qui reçoit ton adresse IP et peut lire ses propres cookies, pour te proposer de continuer avec un compte Google déjà ouvert dans ton navigateur (l'invite « One Tap »).</li>
           <li><strong>Les sites où tu ouvres une offre</strong> — en cliquant sur « Voir l'offre », tu quittes Jobbly pour le site de l'annonce, qui applique sa propre politique.</li>
         </ul>
         <div class="callout">
@@ -184,9 +184,10 @@
           <li><code>jobbly:prefs</code> : ta langue et ton thème ;</li>
           <li><code>jobbly:last-visit</code> : l'identifiant de ton compte et l'heure de ta dernière visite, pour marquer les offres « Nouveau » ;</li>
           <li><code>jobbly:app-opened</code> : une marque sans contenu, pour que l'adresse du site te mène directement à l'appli ;</li>
-          <li>le temps de l'onglet, une marque qui retient que tu as fermé la proposition de connexion de Google.</li>
+          <li>le temps de l'onglet, une marque qui retient que tu as fermé la proposition de connexion de Google ;</li>
+          <li>le temps d'une connexion avec Google, la demande en cours (deux valeurs aléatoires et la page où revenir), puis le jeton que Google rend, effacé dès qu'il a servi.</li>
         </ul>
-        <p>La page de l'appli charge la bibliothèque de Supabase depuis <strong>cdn.jsdelivr.net</strong> (qui reçoit ton adresse IP), interroge <strong>geo.api.gouv.fr</strong> quand tu cherches une commune, et, sur l'écran de connexion, <strong>accounts.google.com</strong>. La présentation et cette page ne joignent aucun autre domaine.</p>
+        <p>La page de l'appli charge la bibliothèque de Supabase depuis <strong>cdn.jsdelivr.net</strong> (qui reçoit ton adresse IP), interroge <strong>geo.api.gouv.fr</strong> quand tu cherches une commune, et, sur l'écran de connexion, <strong>accounts.google.com</strong>. La page de retour de Google (<code>connexion-google.html</code>) ne joint personne. La présentation et cette page ne joignent aucun autre domaine.</p>
       </section>
       <section id="droits">
         <h2><span class="hn">12</span><span>Tes droits</span></h2>
@@ -231,7 +232,7 @@
     <span class="eyebrow legal-eyebrow">Legal</span>
     <h1>Privacy Policy</h1>
     <p class="lead legal-lead">What Jobbly keeps while you look for a job, what goes where to find the offers, and how to erase it all.</p>
-    <span class="updated"><span class="dot"></span>Last updated: 22 November 2026</span>
+    <span class="updated"><span class="dot"></span>Last updated: 25 November 2026</span>
   </div>
 </section>
 <section class="legal-section-wrap">
@@ -309,7 +310,7 @@
           <li><strong>The five job sites</strong> — France Travail, La Bonne Alternance, Jooble, Careerjet and Adzuna — receive, at each search, your keywords and your cities (name, town code, position of the centre, radius), and France Travail the contract types chosen. The request leaves from our server, with our own access keys: <strong>never your email address or your identifier</strong>.</li>
           <li><strong>The listings' sites</strong> — our server opens each offer's link to check that it still leads to the listing. This check carries no data about you.</li>
           <li><strong>The French government's Géo API</strong> (geo.api.gouv.fr) — receives the town name you type in the settings, from your browser, so with your IP address.</li>
-          <li><strong>Google</strong> — on the sign-in screen, if Google sign-in is enabled, the page loads Google's button, which receives your IP address and may read its own cookies; if you choose “Continue with Google”, Google confirms your identity to the Lorderis account.</li>
+          <li><strong>Google</strong> — if you choose “Continue with Google”, the page goes to Google, in the same tab: your browser visits <strong>accounts.google.com</strong>, which receives your IP address and your request, lets you pick your account and sends you back to the site's <code>connexion-google.html</code> page with an identity token, which that page erases from the address at once and the app passes to the Lorderis account. On the sign-in screen, if Google sign-in is enabled, the page also loads Google's script, which receives your IP address and may read its own cookies, to offer to continue with a Google account already signed in to your browser (the “One Tap” prompt).</li>
           <li><strong>The sites where you open an offer</strong> — when you click “See the offer”, you leave Jobbly for the listing's site, which applies its own policy.</li>
         </ul>
         <div class="callout">
@@ -363,9 +364,10 @@
           <li><code>jobbly:prefs</code>: your language and theme;</li>
           <li><code>jobbly:last-visit</code>: your account's identifier and the time of your last visit, to mark offers “New”;</li>
           <li><code>jobbly:app-opened</code>: a mark with no content, so that the site's address takes you straight to the app;</li>
-          <li>for the tab's lifetime, a mark that remembers you closed Google's sign-in suggestion.</li>
+          <li>for the tab's lifetime, a mark that remembers you closed Google's sign-in suggestion;</li>
+          <li>for the length of a Google sign-in, the pending request (two random values and the page to return to), then the token Google returns, erased as soon as it has been used.</li>
         </ul>
-        <p>The app page loads the Supabase library from <strong>cdn.jsdelivr.net</strong> (which receives your IP address), queries <strong>geo.api.gouv.fr</strong> when you search for a town, and, on the sign-in screen, <strong>accounts.google.com</strong>. The presentation and this page reach no other domain.</p>
+        <p>The app page loads the Supabase library from <strong>cdn.jsdelivr.net</strong> (which receives your IP address), queries <strong>geo.api.gouv.fr</strong> when you search for a town, and, on the sign-in screen, <strong>accounts.google.com</strong>. Google's return page (<code>connexion-google.html</code>) reaches no one. The presentation and this page reach no other domain.</p>
       </section>
       <section id="en-droits">
         <h2><span class="hn">12</span><span>Your rights</span></h2>

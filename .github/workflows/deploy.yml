@@ -65,7 +65,7 @@ jobs:
       - name: Assembler le site
         run: |
           rm -rf _site && mkdir _site
-          cp index.html offres.html confidentialite.html .htaccess _site/
+          cp index.html offres.html confidentialite.html connexion-google.html .htaccess _site/
           cp -R assets _site/assets
           echo "Site assemblé :"
           (cd _site && find . -type f | sort)
@@ -80,23 +80,24 @@ jobs:
                  -o -name 'requirements.txt' -o -name 'config.exemple.json' -o -name 'LICENSE' \) -print)
           [ -z "$bad" ] || fail "fichiers internes dans le site assemblé : $bad"
           # Les fichiers dont l'absence ne se verrait qu'en production.
-          for f in index.html offres.html confidentialite.html .htaccess \
+          for f in index.html offres.html confidentialite.html connexion-google.html .htaccess \
                    assets/js/theme-init.js assets/js/prefs.js assets/js/presentation.js assets/js/app.js \
                    assets/js/rules.js assets/js/i18n.js assets/js/supabase.js assets/js/google-auth.js assets/js/toc-spy.js \
+                   assets/js/connexion-google.js \
                    assets/css/jobbly.css assets/css/presentation.css assets/css/legal.css \
                    assets/css/lorderis-footer.css assets/css/lorderis-toggles.css assets/img/icone.svg \
                    assets/img/lorderis-logo.png; do
             [ -f "_site/$f" ] || fail "_site/$f absent"
           done
           # Chaque fichier qu'une page cite est dans le site.
-          for page in index.html offres.html confidentialite.html; do
+          for page in index.html offres.html confidentialite.html connexion-google.html; do
             for ref in $(grep -oE '(src|href)="/?assets/[^"?#]+' "_site/$page" | sed -E 's/^(src|href)="\/?//' | sort -u); do
               [ -f "_site/$ref" ] || fail "$page cite $ref, absent du site"
             done
           done
           # Aucun script ni style en ligne, aucun gestionnaire on…= : la CSP les
           # refuserait, et la page resterait muette.
-          for page in index.html offres.html confidentialite.html; do
+          for page in index.html offres.html confidentialite.html connexion-google.html; do
             if grep -Eq '<script>|<script [^>]*>[^<]|<style|style="| on[a-z]+="' "_site/$page"; then
               fail "$page porte un script, un style ou un gestionnaire en ligne, que la CSP refuse"
             fi
@@ -134,7 +135,7 @@ jobs:
       # Anciens noms du dossier : aucun, c'est le premier site de Jobbly.
       old_site_dirs: ""
       artifact_name: jobbly-site
-      required_files: index.html offres.html confidentialite.html .htaccess
+      required_files: index.html offres.html confidentialite.html connexion-google.html .htaccess
       # FTP_REMOTE_DIR : « /website-jobbly » (compte qui voit tout
       # l'hébergement, le réglage posé par le propriétaire) ou « / » (compte
       # limité au dossier), rien d'autre.
@@ -150,14 +151,14 @@ jobs:
       # qu'elle cite : scripts, feuilles, images et .htaccess d'abord, puis les
       # pages, index.html en dernier, enfin le --delete.
       staged_upload: true
-      deferred_files: offres.html confidentialite.html index.html
+      deferred_files: offres.html confidentialite.html connexion-google.html index.html
       verify_files: index.html offres.html .htaccess
       # Tant que le sous-domaine n'est pas pointé sur website-jobbly chez IONOS,
       # il ne répond pas, ou pas avec ce site : l'étape le DIT en avertissement,
       # sans faire échouer un envoi qui, lui, a réussi. Un site qui répond avec
       # la bonne page mais sans CSP, ou qui sert l'ancien script, échoue.
       site_url: https://jobbly.lorderis.dev
-      served_pages: /=index.html
+      served_pages: /=index.html /connexion-google.html=connexion-google.html
       require_csp: true
       forbidden_urls: /job_alert.py
       site_check_soft: true

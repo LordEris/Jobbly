@@ -1,8 +1,11 @@
 # Notes pour les agents
 
 Les deux premières sections sont **communes à tous les dépôts** et identiques
-partout : les modifier, c'est les modifier dans chaque dépôt. Ce qui est propre à
-ce dépôt commence à « Ce dépôt ».
+partout : les modifier, c'est les modifier dans chaque dépôt. Leur source est le
+dossier `common/` de [Workflows](https://github.com/LordEris/workflows), avec les
+autres fichiers communs ; `scripts/sync-common.py` y vérifie un dépôt et le remet
+à jour ([docs/modele-commun.md](https://github.com/LordEris/workflows/blob/main/docs/modele-commun.md)).
+Ce qui est propre à ce dépôt commence à « Ce dépôt ».
 
 ## Organisation commune
 
@@ -67,8 +70,10 @@ celui du projet Supabase commun, dont le dépôt de référence est
 [Account-LordEris](https://github.com/LordEris/Account-LordEris) : même
 e-mail, même mot de passe, même compte Google partout, gérés sur
 `account.lorderis.dev`. Une app ne crée jamais son propre système de comptes.
-Les textes de connexion, d'inscription et de suppression, et le pied de page
-LordEris (celui de lorderis.dev) en bas de page sont communs, au mot près.
+Les textes de connexion, d'inscription et de suppression sont communs, au mot
+près ; le pied de page LordEris (celui de lorderis.dev) va en bas des pages de
+site (présentations, pages légales, sites), jamais dans une appli, même ouverte
+dans un navigateur.
 
 **Livrer** : une branche, une pull request, jamais de poussée directe sur la
 branche par défaut. Avant d'ajouter à l'index, relire `git status` : un
@@ -168,9 +173,26 @@ Trois parties, qui ne se mélangent pas :
 - **Une seule page parle au monde** : `offres.html`. Son bloc
   `<FilesMatch>` de `.htaccess` lui donne le projet commun, `cdn.jsdelivr.net`
   (le SDK, SRI), `geo.api.gouv.fr` (la recherche de commune) et les quatre
-  emplois de `https://accounts.google.com/gsi/` (le bouton Google), avec la
-  COOP `same-origin-allow-popups`. La présentation et la politique ont une
-  CSP qui ne joint personne. Une origine ajoutée au code sans être nommée là
+  emplois de `https://accounts.google.com/gsi/` (l'invite One Tap), avec la
+  COOP `same-origin-allow-popups` (sous Safari et Firefox, l'invite termine
+  dans une fenêtre de Google). La présentation et la politique ont une
+  CSP qui ne joint personne ; `connexion-google.html`, la plus fermée.
+- **« Continuer avec Google » est notre bouton, et la page part chez
+  Google** dans le même onglet, sans fenêtre (décision du propriétaire,
+  25 novembre 2026). Google revient sur `connexion-google.html`, qui efface
+  le fragment, range le résultat et revient à `offres.html`, où `finish()`
+  donne le jeton à Supabase. `assets/js/google-auth.js` est la copie de
+  `reference/web/google-auth.js` d'Account-LordEris (identique hors
+  en-tête), `assets/js/connexion-google.js` celle de
+  `reference/web/connexion-google.js`, à l'octet ; `tools/check-site.mjs`
+  les compare. Le script de Google ne sert plus qu'à l'invite, chargé à
+  l'adresse publiée seulement. **Exception à « aucun jeton n'est lu dans un
+  lien »** : le jeton d'identité que Google met dans le fragment de
+  `connexion-google.html`, accepté seulement s'il répond à une demande en
+  cours de cet onglet (l'état), de moins de dix minutes, une seule fois, et
+  lié par le nonce. `https://jobbly.lorderis.dev/connexion-google.html`
+  doit figurer dans les « URI de redirection autorisés » du client Web
+  « Lorderis ». Une origine ajoutée au code sans être nommée là
   donne une requête bloquée, sans autre message que la console.
 - **L'identité est celle du rapport du script** (`_CSS` de `job_alert.py` :
   fond grège, bandeau bleu en dégradé, pastilles de source pastel), mise en
@@ -218,16 +240,20 @@ Trois parties, qui ne se mélangent pas :
   `tools/check-site.mjs` les compare à Account-LordEris quand il est cloné à
   côté.
 - **Le pied de page est celui de lorderis.dev, le même dans tous les
-  projets** (décision du propriétaire, 22 novembre 2026 ; gabarit
-  d'Account-LordEris, `reference/footer/`) : logo LordEris, ©, GitHub ·
-  Discord · Fiverr · BuiltByBit · Confidentialité (la politique de Jobbly) ·
-  Mon compte, textes du kit au mot près (`footer.*` de `i18n.js` pour
-  l'appli, blocs FR / EN pour la présentation et la politique). C'est
+  projets, et seulement sur les pages de site** (décision du propriétaire,
+  22 novembre 2026 ; gabarit d'Account-LordEris, `reference/footer/`) : la
+  présentation (`index.html`) et la politique (`confidentialite.html`) le
+  portent — logo LordEris, ©, GitHub · Discord · Fiverr · BuiltByBit ·
+  Confidentialité (la politique de Jobbly) · Mon compte, textes du kit au mot
+  près en blocs FR / EN. **La page de l'appli (`offres.html`) ne le porte
+  pas** : une appli reste une appli, même dans un site (décision du
+  25 novembre 2026). Elle garde la politique sous la connexion et dans les
+  réglages, et « Gérer mon compte Lorderis » dans les réglages. C'est
   l'exception à la règle des couleurs : il reste sombre dans les deux thèmes
   et `jobbly.css` n'y touche pas. Rien ne le double juste au-dessus : pas de
   bloc « Pages légales » qui répéterait « Confidentialité » (demande du
   propriétaire, 22 novembre 2026). `tools/check-site.mjs` le relit sur les
-  trois pages, et refuse un tel bloc.
+  deux pages de site, refuse un tel bloc, et refuse le pied dans l'appli.
 
 ### Publier
 
@@ -237,7 +263,7 @@ est celui du workflow réutilisable commun, `sftp-deploy.yml` de
 avec sa version en commentaire : une correction du gabarit SFTP se fait
 là-bas, et arrive ici par une montée de version (Dependabot la propose). Le
 fichier d'ici n'en garde que les paramètres, et ce qui est propre à Jobbly :
-il **assemble le site par une liste fermée** (`index.html`, `offres.html`, `confidentialite.html`, `.htaccess`,
+il **assemble le site par une liste fermée** (`index.html`, `offres.html`, `connexion-google.html`, `confidentialite.html`, `.htaccess`,
 `assets/`) : un fichier ajouté au site s'ajoute à cette liste, sinon il ne
 part pas. Rien de `supabase/`, `docs/`, `tools/`, ni l'ancien script ; le
 `.htaccess` les refuse aussi. Le site assemblé part en artefact

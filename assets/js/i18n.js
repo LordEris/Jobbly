@@ -4,7 +4,7 @@
 // Les textes du compte Lorderis sont ceux du kit, au mot près
 // (Account-LordEris, reference/texts.json, et la page de connexion commune) :
 // auth.lead, auth.signup_note, auth.google, auth.google_off, data.delete,
-// data.deleted, data.where, footer.*. Ils tutoient, comme le reste de Jobbly.
+// data.deleted, data.where. Ils tutoient, comme le reste de Jobbly.
 // Une clé absente en anglais retombe sur le français ; tools/rules.test.mjs
 // vérifie que les deux catalogues ont les mêmes clés et les mêmes {variables}.
 // ────────────────────────────────────────────────────────────────────────────
@@ -43,7 +43,8 @@ export const STRINGS = {
     'auth.google': 'Continuer avec Google',
     'auth.google_off': 'La connexion avec Google n\'est pas encore activée. Utilise ton adresse e-mail et ton mot de passe.',
     'auth.google_unknown': 'Impossible de savoir pour l\'instant si la connexion avec Google est disponible. Utilise ton adresse e-mail et ton mot de passe, ou recharge la page.',
-    'auth.google_blocked': 'Le bouton Google n\'a pas pu se charger : un bloqueur de contenu ou le réseau l\'en empêche peut-être. Utilise ton adresse e-mail et ton mot de passe, ou recharge la page.',
+    'auth.google_cancelled': 'Connexion avec Google annulée. Réessaie, ou utilise ton adresse e-mail et ton mot de passe.',
+    'auth.google_expired': 'La demande de connexion avec Google a expiré ou ne vient pas de cet onglet. Réessaie.',
     'auth.google_refused': 'La connexion avec Google a échoué. Réessaie, ou utilise ton adresse e-mail et ton mot de passe.',
     'auth.signup_note': 'Ce compte Lorderis te servira aussi dans nos autres apps. Supprimer tes données de Jobbly ne supprime pas ton compte tant qu\'une autre app s\'en sert.',
     'auth.signup_sent': 'Compte créé : ouvre le lien reçu par e-mail pour le confirmer, puis connecte-toi.',
@@ -243,11 +244,6 @@ export const STRINGS = {
     'data.back_signin': 'Revenir à la connexion',
     'about.title': 'À propos',
     'about.privacy': 'Politique de confidentialité',
-    // Le pied de page LordEris : textes du kit, au mot près
-    // (Account-LordEris, reference/texts.json, clé « footer »).
-    'footer.copy': '© 2026 LordEris. Développeur full-stack & Minecraft.',
-    'footer.privacy': 'Confidentialité',
-    'footer.account': 'Mon compte',
   },
   en: {
     'title.app': 'Jobbly — my job offers',
@@ -282,7 +278,8 @@ export const STRINGS = {
     'auth.google': 'Continue with Google',
     'auth.google_off': 'Sign-in with Google is not enabled yet. Use your email address and password.',
     'auth.google_unknown': 'Cannot tell right now whether Google sign-in is available. Use your email address and password, or reload the page.',
-    'auth.google_blocked': 'The Google button could not load: a content blocker or the network may be stopping it. Use your email address and password, or reload the page.',
+    'auth.google_cancelled': 'Sign-in with Google was cancelled. Try again, or use your email address and password.',
+    'auth.google_expired': 'The sign-in request to Google expired or did not come from this tab. Try again.',
     'auth.google_refused': 'Google sign-in failed. Try again, or use your email address and password.',
     'auth.signup_note': 'This Lorderis account will also work in our other apps. Deleting your Jobbly data does not delete your account while another app uses it.',
     'auth.signup_sent': 'Account created: open the link you received by email to confirm it, then sign in.',
@@ -482,9 +479,6 @@ export const STRINGS = {
     'data.back_signin': 'Back to sign-in',
     'about.title': 'About',
     'about.privacy': 'Privacy policy',
-    'footer.copy': '© 2026 LordEris. Full-stack & Minecraft developer.',
-    'footer.privacy': 'Privacy policy',
-    'footer.account': 'My account',
   },
 }
 

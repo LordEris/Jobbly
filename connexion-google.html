@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- La page de retour de « Continuer avec Google » : copie de
+     reference/web/connexion-google.html (Account-LordEris). Google renvoie ici ;
+     assets/js/connexion-google.js efface le fragment, range le résultat et
+     revient à offres.html, où google-auth.js donne le jeton à Supabase. Sa
+     CSP est la plus fermée du site (.htaccess). -->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="lorderis-google-signin" content="/offres.html">
+<title>Connexion avec Google</title>
+<script src="assets/js/connexion-google.js"></script>
+</head>
+<body>
+<main>
+  <p>Connexion avec Google…</p>
+  <p lang="en">Signing in with Google…</p>
+  <p><a href="offres.html">Revenir à la connexion</a> · <a href="offres.html" lang="en">Back to sign-in</a></p>
+</main>
+</body>
+</html>

@@ -21,8 +21,10 @@
 // données sont celles de tools/demo-data.mjs, inventées.
 //
 // Les parcours joués : connexion (mot de passe faux, puis juste), inscription,
-// mot de passe oublié, « Continuer avec Google » (nonce haché vers Google,
-// brut vers Supabase) ; la liste, ses filtres et le détail ; un statut
+// mot de passe oublié, « Continuer avec Google » (la page part chez Google,
+// départ intercepté et relu, retour par connexion-google.html avec un jeton,
+// une annulation, un lien fabriqué ; l'invite One Tap à l'adresse publiée ;
+// nonce haché vers Google, brut vers Supabase) ; la liste, ses filtres et le détail ; un statut
 // enregistré (seuls `status` et `status_at` partent), un statut refusé par le
 // serveur (l'écran revient en arrière et le dit) ; « Fausse offre » ;
 // « Ignorer et supprimer » ; « Actualiser » (bouton désactivé pendant
@@ -82,11 +84,16 @@ const htaccess = fs.readFileSync(path.join(root, '.htaccess'), 'utf8')
 const local = (csp) => csp.replace(/;\s*upgrade-insecure-requests/, '')
 const appBlock = htaccess.match(/<FilesMatch "\^offres\\\.html\$">([\s\S]*?)<\/FilesMatch>/)
 if (!appBlock) { console.error('ÉCHEC : bloc <FilesMatch> d\'offres.html introuvable dans .htaccess'); process.exit(1) }
-const outside = htaccess.replace(appBlock[0], '')
+const outside = htaccess.replace(appBlock[0], '').replace(/<FilesMatch "\^connexion-google[\s\S]*?<\/FilesMatch>/, '')
 const BASE = {
   csp: local(outside.match(/Header always set Content-Security-Policy "([^"]+)"/)[1]),
   coop: outside.match(/Header always set Cross-Origin-Opener-Policy "([^"]+)"/)[1],
 }
+// La page de retour de Google (connexion-google.html) : sa CSP, la plus
+// fermée du site, et son referrer coupé.
+const backBlock = htaccess.match(/<FilesMatch "\^connexion-google\\\.html\$">([\s\S]*?)<\/FilesMatch>/)
+if (!backBlock) { console.error('ÉCHEC : bloc <FilesMatch> de connexion-google.html introuvable dans .htaccess'); process.exit(1) }
+const BACK = { csp: local(backBlock[1].match(/Header always set Content-Security-Policy "([^"]+)"/)[1]) }
 const APP = {
   csp: local(appBlock[1].match(/Header always set Content-Security-Policy "([^"]+)"/)[1]),
   coop: appBlock[1].match(/Header always set Cross-Origin-Opener-Policy "([^"]+)"/)[1],
@@ -107,9 +114,11 @@ const server = http.createServer((req, res) => {
   const full = path.join(root, file)
   if (!full.startsWith(root) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) { res.writeHead(404); res.end(); return }
   const app = path.basename(full) === 'offres.html'
+  const back = path.basename(full) === 'connexion-google.html'
   res.writeHead(200, {
     'Content-Type': TYPES[path.extname(full)] || 'application/octet-stream',
-    'Content-Security-Policy': app ? APP.csp : BASE.csp,
+    'Content-Security-Policy': back ? BACK.csp : app ? APP.csp : BASE.csp,
+    ...(back ? { 'Referrer-Policy': 'no-referrer' } : {}),
     'Cross-Origin-Opener-Policy': app ? APP.coop : BASE.coop,
     'X-Content-Type-Options': 'nosniff',
   })
@@ -117,6 +126,7 @@ const server = http.createServer((req, res) => {
 })
 await new Promise((r) => server.listen(0, '127.0.0.1', r))
 const base = `http://127.0.0.1:${server.address().port}`
+const PUBLISHED = 'https://jobbly.lorderis.dev'
 
 // ── Le projet Supabase, imité ──────────────────────────────────────────────
 const SB = 'https://imbfggbrkpzbqcouxseo.supabase.co'
@@ -237,7 +247,7 @@ const FAKE_GSI = `(function () {
       el.innerHTML = '<div style="position: relative;"><iframe title="Google" style="display: block; border: 0; width: ' + w + 'px; height: 44px;"></iframe></div>'
       el.querySelector('iframe').src = '${GSI}button?theme=' + o.theme + '&hl=' + o.locale
     },
-    prompt: function () { fetch('${GSI}status').catch(function () {}) },
+    prompt: function () { st.prompts = (st.prompts || 0) + 1; fetch('${GSI}status').catch(function () {}) },
     cancel: function () {},
   } } }
 })()`
@@ -248,10 +258,18 @@ function fakeButtonPage(url) {
   const [bg, fg, rule] = dark ? ['#131314', '#e3e3e3', '#8e918f'] : ['#ffffff', '#1f1f1f', '#747775']
   return `<!doctype html><meta charset="utf-8"><meta name="color-scheme" content="light dark"><style>html,body{margin:0;background:transparent}div{box-sizing:border-box;height:40px;margin:2px 0;border:1px solid ${rule};border-radius:20px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font:500 14px/1 Arial,sans-serif}</style><div>G&nbsp;&nbsp;${text}</div>`
 }
+const AUTHORIZE = 'https://accounts.google.com/o/oauth2/v2/auth'
 async function mockGoogle(page) {
+  page.__authorize = []
   await page.route('https://accounts.google.com/**', (route) => {
     const url = route.request().url()
     const cors = { 'Access-Control-Allow-Origin': '*' }
+    // Le départ de notre bouton : la page part chez Google. Intercepté, et
+    // son adresse notée pour être relue paramètre par paramètre.
+    if (url.startsWith(AUTHORIZE)) {
+      page.__authorize.push(url)
+      return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: '<!doctype html><title>Google (imité)</title><p>Choisir un compte</p>' })
+    }
     if (url.startsWith(GSI + 'client')) return route.fulfill({ status: 200, contentType: 'text/javascript', headers: cors, body: FAKE_GSI })
     if (url.startsWith(GSI + 'style')) return route.fulfill({ status: 200, contentType: 'text/css', headers: cors, body: '#credential_picker_container{position:fixed}' })
     if (url.startsWith(GSI + 'button')) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fakeButtonPage(url) })
@@ -285,6 +303,17 @@ async function openPageWith(setup = {}) {
   })
   const page = await ctx.newPage()
   page.__problems = []
+  // L'adresse publiée, servie par le serveur local : seule l'invite One Tap
+  // s'y propose (ailleurs, Google refuse l'origine).
+  if (setup.published) {
+    await page.route(PUBLISHED + '/**', async (route) => {
+      const u = new URL(route.request().url())
+      const res = await route.fetch({ url: base + u.pathname + u.search, maxRedirects: 0 })
+      const headers = { ...res.headers() }
+      for (const k of ['content-security-policy']) if (headers[k] && !/upgrade-insecure-requests/.test(headers[k])) headers[k] += '; upgrade-insecure-requests'
+      return route.fulfill({ response: res, headers })
+    })
+  }
   const prefs = JSON.stringify({ theme: setup.theme || 'light', language: setup.lang || 'fr' })
   const visit = setup.lastVisit === false ? null : JSON.stringify({ [DEMO.USER.id]: new Date(Date.UTC(2026, 10, 21, 18, 0)).toISOString() })
   await page.addInitScript(([prefs, visit, storage]) => {
@@ -401,6 +430,32 @@ async function checkFooter(name, page, lang, theme) {
   ok(name, 'pied de page LordEris')
 }
 
+/** La page de l'appli ne porte pas le pied de page LordEris : une appli reste
+ *  une appli, même dans un site (décision du propriétaire, 25 novembre
+ *  2026). Ce qu'il portait d'utile reste : la politique sous la connexion. */
+async function checkNoFooter(name, page, { signIn = false } = {}) {
+  const f = await page.evaluate(() => ({
+    footers: document.querySelectorAll('footer.lorderis-footer, .lorderis-footer').length,
+    sheet: !!document.querySelector('link[href*="lorderis-footer"]'),
+    copy: document.body.innerText.includes('© 2026 LordEris'),
+    privacy: [...document.querySelectorAll('#viewSignIn a[href="https://jobbly.lorderis.dev/confidentialite.html"]')]
+      .filter((a) => a.getClientRects().length).length,
+  }))
+  if (f.footers || f.sheet || f.copy) fail(name, `pied de page LordEris dans l'appli : ${JSON.stringify(f)}`)
+  else ok(name, 'pas de pied de page LordEris dans l\'appli')
+  if (signIn && f.privacy !== 1) fail(name, `politique sous la connexion : ${f.privacy} lien(s) visible(s) au lieu de 1`)
+}
+
+/** Les réglages gardent la politique et « Gérer mon compte Lorderis ». */
+async function checkSettingsLinks(name, page) {
+  const hrefs = await page.evaluate(() => [...document.querySelectorAll('#viewSettings a')]
+    .filter((a) => a.getClientRects().length).map((a) => a.getAttribute('href')))
+  for (const want of ['https://jobbly.lorderis.dev/confidentialite.html', 'https://account.lorderis.dev/']) {
+    if (hrefs.filter((h) => h === want).length !== 1) fail(name, `réglages : ${want} absent ou répété (${hrefs.join(' ')})`)
+  }
+  ok(name, 'réglages : politique et compte Lorderis')
+}
+
 // ═══ 1. Chaque page, chaque format, chaque thème, chaque langue ═══════════
 for (const width of [390, 1280]) {
   for (const theme of ['light', 'dark']) {
@@ -440,8 +495,8 @@ for (const width of [390, 1280]) {
         const name = `appli ${tag}`
         await page.goto(base + '/offres.html')
         await page.waitForSelector('#viewSignIn:not([hidden])')
-        await page.waitForSelector('#googleGis:not([hidden]) iframe', { timeout: 6000 }).then(() => ok(name, 'bouton Google monté'), () => fail(name, 'bouton Google non monté'))
-        await checkFooter(name, page, lang, theme)
+        await page.waitForSelector('#googleBtn:not([hidden])', { timeout: 6000 }).then(() => ok(name, 'bouton Google affiché'), () => fail(name, 'bouton Google absent'))
+        await checkNoFooter(name, page, { signIn: true })
         await shot(page, `connexion-${tag}.png`)
         await signIn(page)
         await page.waitForSelector('#viewOffers:not([hidden]) .card')
@@ -452,6 +507,8 @@ for (const width of [390, 1280]) {
         await shot(page, `detail-${tag}.png`)
         await page.click('#navSettings')
         await page.waitForSelector('#viewSettings:not([hidden]) .chip')
+        await checkSettingsLinks(name, page)
+        await checkNoFooter(name, page)
         await shot(page, `reglages-${tag}.png`)
       })
     }
@@ -476,17 +533,68 @@ await withPage('connexion : mot de passe faux, inscription, oubli', {}, async (p
   await expectText(n, page, '#authStatus', /Compte créé : ouvre le lien/, 'inscription : lien de confirmation annoncé')
 })
 
+const ID_TOKEN = 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJnb29nbGUifQ.c2ln'
+
+/** Clique « Continuer avec Google » : la page doit partir vers l'adresse attendue. */
+async function googleDeparture(n, page) {
+  await Promise.all([page.waitForURL(AUTHORIZE + '**', { timeout: 8000 }), page.click('#googleBtn')])
+  const q = Object.fromEntries(new URL(page.__authorize[page.__authorize.length - 1]).searchParams)
+  const keys = Object.keys(q).sort().join(',')
+  if (keys !== 'client_id,hl,nonce,prompt,redirect_uri,response_type,scope,state') fail(n, 'paramètres de départ : ' + keys)
+  else if (q.redirect_uri !== base + '/connexion-google.html') fail(n, 'redirect_uri : ' + q.redirect_uri)
+  else if (q.response_type !== 'id_token' || q.scope !== 'openid email profile' || q.prompt !== 'select_account') fail(n, 'paramètres : ' + JSON.stringify(q))
+  else if (!/^[0-9a-f]{64}$/.test(q.nonce) || !/^[0-9a-f]{64}$/.test(q.state)) fail(n, 'nonce ou état : ' + JSON.stringify(q))
+  else ok(n, 'départ vers Google, paramètres relus')
+  return q
+}
+
 await withPage('connexion avec Google', { width: 1280, theme: 'dark', lang: 'en' }, async (page) => {
   const n = 'Google'
   await page.goto(base + '/offres.html')
-  await page.waitForSelector('#googleGis:not([hidden]) iframe')
-  const hashed = await page.evaluate(() => window.__gis.cfg.nonce)
+  await page.waitForSelector('#googleBtn:not([hidden])')
+  const q = await googleDeparture(n, page)
+  if (q.hl !== 'en') fail(n, 'langue de Google : ' + q.hl)
+  // Le retour, avec ce que Google mettrait dans l'adresse.
+  await page.goto(base + '/connexion-google.html#state=' + q.state + '&id_token=' + ID_TOKEN + '&authuser=0')
+  await page.waitForSelector('#viewOffers:not([hidden]) .card')
+  if (/id_token/.test(page.url())) fail(n, 'jeton resté dans l\'adresse')
+  const sent = page.__st.idTokens[0] || {}
+  if (sent.provider !== 'google' || sent.id_token !== ID_TOKEN) fail(n, 'échange : ' + JSON.stringify(sent))
+  if (!sent.nonce || sent.nonce === q.nonce || sha256(sent.nonce) !== q.nonce) fail(n, 'nonce : le brut vers Supabase ne correspond pas au haché vers Google')
+  else ok(n, 'nonce haché vers Google, brut vers Supabase')
+  if (await page.evaluate(() => sessionStorage.getItem('lorderis.google.pending') || sessionStorage.getItem('lorderis.google.result'))) fail(n, 'demande non consommée')
+})
+
+await withPage('Google annulé', {}, async (page) => {
+  const n = 'Google annulé'
+  await page.goto(base + '/offres.html')
+  await page.waitForSelector('#googleBtn:not([hidden])')
+  const q = await googleDeparture(n, page)
+  await page.goto(base + '/connexion-google.html#state=' + q.state + '&error=access_denied')
+  await expectText(n, page, '#authStatus', /Connexion avec Google annulée/, 'annulation dite')
+  if (page.__st.idTokens.length) fail(n, 'jeton échangé après une annulation')
+})
+
+await withPage('Google : lien fabriqué', {}, async (page) => {
+  const n = 'lien fabriqué'
+  await page.goto(base + '/connexion-google.html#state=' + 'a'.repeat(64) + '&id_token=' + ID_TOKEN)
+  await page.waitForSelector('#viewSignIn:not([hidden])')
+  await expectText(n, page, '#authStatus', /a expiré ou ne vient pas de cet onglet/, 'lien refusé et dit')
+  if (page.__st.idTokens.length) fail(n, 'jeton d\'un lien fabriqué donné à Supabase')
+})
+
+await withPage('Google : l\'invite One Tap, à l\'adresse publiée', { published: true }, async (page) => {
+  const n = 'invite One Tap'
+  await page.goto(PUBLISHED + '/offres.html')
+  await page.waitForFunction(() => window.__gis && window.__gis.prompts === 1, null, { timeout: 8000 })
+  const g = await page.evaluate(() => ({ nonce: window.__gis.cfg.nonce, renders: window.__gis.renders, auto: window.__gis.cfg.auto_select }))
+  if (g.renders) fail(n, 'bouton dessiné par Google')
+  if (g.auto !== false) fail(n, 'auto_select')
   await page.evaluate(() => window.__gis.cfg.callback({ credential: 'eyJhbGciOiJSUzI1NiJ9.e30.c2ln' }))
   await page.waitForSelector('#viewOffers:not([hidden]) .card')
   const sent = page.__st.idTokens[0] || {}
-  if (sent.provider !== 'google') fail(n, 'fournisseur non google')
-  if (!sent.nonce || sha256(sent.nonce) !== hashed) fail(n, 'nonce : le brut vers Supabase ne correspond pas au haché vers Google')
-  else ok(n, 'nonce haché vers Google, brut vers Supabase')
+  if (!sent.nonce || sha256(sent.nonce) !== g.nonce) fail(n, 'nonce : le brut vers Supabase ne correspond pas au haché vers Google')
+  else ok(n, 'invite : nonce haché vers Google, brut vers Supabase')
 })
 
 await withPage('Google désactivé', { project: { google: false } }, async (page) => {
@@ -797,6 +905,8 @@ if ((!ONLY || ONLY.test('copies')) && fs.existsSync(path.join(kit, 'reference'))
   const tail = (f) => { const s = fs.readFileSync(f, 'utf8'); return s.slice(s.indexOf(';(function')) }
   if (tail(path.join(root, 'assets/js/google-auth.js')) === tail(path.join(kit, 'reference/web/google-auth.js'))) ok('copies', 'google-auth.js, hors en-tête')
   else fail('copies', 'google-auth.js s\'écarte de reference/web/google-auth.js')
+  if (same('assets/js/connexion-google.js', 'reference/web/connexion-google.js')) ok('copies', 'assets/js/connexion-google.js')
+  else fail('copies', 'assets/js/connexion-google.js s\'écarte de reference/web/connexion-google.js')
 } else if (!ONLY) {
   console.log('· copies du kit : Account-LordEris absent à côté, comparaison non faite (ACCOUNT_LORDERIS=<chemin> pour la faire)')
 }

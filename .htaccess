@@ -44,28 +44,46 @@
   #     parler à n'importe quel projet ;
   #   · https://geo.api.gouv.fr : la recherche de commune des réglages (API
   #     Géo de l'État, sans clé ni cookie) ;
-  # « Continuer avec Google » : le bouton de Google Identity Services. Les
-  # quatre emplois de https://accounts.google.com/gsi/ que Google documente,
-  # chacun limité à son chemin (les mêmes qu'account.lorderis.dev) :
+  # « Continuer avec Google » est NOTRE bouton (décision du propriétaire,
+  # 25 novembre 2026) : la page part chez Google dans le même onglet — une
+  # navigation, qu'aucune directive ne concerne — et revient par
+  # connexion-google.html (bloc suivant). Reste l'invite One Tap, et pour
+  # elle les quatre emplois de https://accounts.google.com/gsi/ que Google
+  # documente, chacun limité à son chemin (les mêmes qu'account.lorderis.dev) :
   #   · script-src …/gsi/client, chargé à la demande quand l'écran de
-  #     connexion s'affiche, sans empreinte (Google le met à jour sous la même
-  #     adresse) : d'où le chemin exact ;
-  #   · frame-src …/gsi/ : le bouton EST un cadre de Google, comme l'invite ;
+  #     connexion s'affiche à l'adresse publiée, sans empreinte (Google le met
+  #     à jour sous la même adresse) : d'où le chemin exact ;
+  #   · frame-src …/gsi/ : hors FedCM, l'invite est un cadre de Google ;
   #   · style-src …/gsi/style : la feuille que le script ajoute au <head> ;
   #   · connect-src …/gsi/ : l'invite One Tap passe par FedCM.
   # Un écart, le seul, et voulu : style-src-attr 'unsafe-inline'. Le script
-  # de Google pose dans la page un bouton provisoire dont le balisage porte
-  # des attributs style="…". Il n'ouvre ni les blocs <style> ni les scripts.
+  # de Google pose dans la page le conteneur de l'invite, dont le balisage
+  # porte des attributs style="…". Il n'ouvre ni les blocs <style> ni les
+  # scripts.
   # img-src data: : le SDK et le bouton dessinent de petites images en data:.
   # form-action 'none' : les formulaires partent par script. Si le script ne
   # se charge pas, le navigateur ne doit PAS envoyer l'e-mail et le mot de
   # passe dans l'URL d'un GET. Les <dialog> (method="dialog") n'y sont pas
   # soumis.
-  # Cross-Origin-Opener-Policy same-origin-allow-popups : le choix du compte
-  # Google peut s'ouvrir dans une fenêtre qui doit répondre à la page.
+  # Cross-Origin-Opener-Policy same-origin-allow-popups, gardée pour l'invite :
+  # sous Safari et Firefox, « Continuer en tant que … » termine dans une
+  # fenêtre de Google qui doit répondre à la page. Le bouton n'en ouvre plus.
   <FilesMatch "^offres\.html$">
     Header always set Content-Security-Policy "default-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; style-src 'self' https://accounts.google.com/gsi/style; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://imbfggbrkpzbqcouxseo.supabase.co https://geo.api.gouv.fr https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
     Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+    Header always set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
+
+  # ── La page de retour de Google (connexion-google.html) ───────────────────
+  # Google y renvoie, #id_token=… dans le fragment ; son script
+  # (assets/js/connexion-google.js) l'efface aussitôt, range le résultat et
+  # revient à offres.html. La page la plus fermée du site : elle ne charge que
+  # ce script, ne parle à personne (pas de connect-src : il retombe sur
+  # 'none'), n'a ni image, ni feuille, ni cadre, ne s'indexe pas, et son
+  # referrer est coupé. Publique : aucune session ne la garde.
+  <FilesMatch "^connexion-google\.html$">
+    Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Header always set Referrer-Policy "no-referrer"
     Header always set X-Robots-Tag "noindex, nofollow"
   </FilesMatch>
 
@@ -122,18 +140,17 @@ DirectoryIndex index.html
 
 # ─── Cache navigateur ─────────────────────────────────────────────────────────
 # Aucun fichier ne porte d'empreinte dans son nom et le déploiement écrase en
-# place : une heure pour HTML, CSS et JS, et `no-cache` pour les captures de
-# la présentation, qui gardent leur nom d'une version à l'autre.
+# place : HTML, CSS et JS sont revalidés à chaque visite (`no-cache`, un 304
+# sans le fichier), comme les captures de la présentation, qui gardent leur
+# nom d'une version à l'autre. Avec une heure de cache, une mise en ligne
+# restait invisible jusqu'à une heure — et une page neuve pouvait tourner avec
+# l'ancien app.js.
 <IfModule mod_expires.c>
   ExpiresActive On
-  ExpiresByType text/html                "access plus 1 hour"
-  ExpiresByType text/css                 "access plus 1 hour"
-  ExpiresByType application/javascript   "access plus 1 hour"
-  ExpiresByType text/javascript          "access plus 1 hour"
   ExpiresByType image/svg+xml            "access plus 1 day"
 </IfModule>
 <IfModule mod_headers.c>
-  <FilesMatch "\.webp$">
+  <FilesMatch "\.(html|css|js|webp)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>
