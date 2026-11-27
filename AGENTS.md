@@ -173,9 +173,26 @@ Trois parties, qui ne se mélangent pas :
 - **Une seule page parle au monde** : `offres.html`. Son bloc
   `<FilesMatch>` de `.htaccess` lui donne le projet commun, `cdn.jsdelivr.net`
   (le SDK, SRI), `geo.api.gouv.fr` (la recherche de commune) et les quatre
-  emplois de `https://accounts.google.com/gsi/` (le bouton Google), avec la
-  COOP `same-origin-allow-popups`. La présentation et la politique ont une
-  CSP qui ne joint personne. Une origine ajoutée au code sans être nommée là
+  emplois de `https://accounts.google.com/gsi/` (l'invite One Tap), avec la
+  COOP `same-origin-allow-popups` (sous Safari et Firefox, l'invite termine
+  dans une fenêtre de Google). La présentation et la politique ont une
+  CSP qui ne joint personne ; `connexion-google.html`, la plus fermée.
+- **« Continuer avec Google » est notre bouton, et la page part chez
+  Google** dans le même onglet, sans fenêtre (décision du propriétaire,
+  25 novembre 2026). Google revient sur `connexion-google.html`, qui efface
+  le fragment, range le résultat et revient à `offres.html`, où `finish()`
+  donne le jeton à Supabase. `assets/js/google-auth.js` est la copie de
+  `reference/web/google-auth.js` d'Account-LordEris (identique hors
+  en-tête), `assets/js/connexion-google.js` celle de
+  `reference/web/connexion-google.js`, à l'octet ; `tools/check-site.mjs`
+  les compare. Le script de Google ne sert plus qu'à l'invite, chargé à
+  l'adresse publiée seulement. **Exception à « aucun jeton n'est lu dans un
+  lien »** : le jeton d'identité que Google met dans le fragment de
+  `connexion-google.html`, accepté seulement s'il répond à une demande en
+  cours de cet onglet (l'état), de moins de dix minutes, une seule fois, et
+  lié par le nonce. `https://jobbly.lorderis.dev/connexion-google.html`
+  doit figurer dans les « URI de redirection autorisés » du client Web
+  « Lorderis ». Une origine ajoutée au code sans être nommée là
   donne une requête bloquée, sans autre message que la console.
 - **L'identité est celle du rapport du script** (`_CSS` de `job_alert.py` :
   fond grège, bandeau bleu en dégradé, pastilles de source pastel), mise en
@@ -242,7 +259,7 @@ Trois parties, qui ne se mélangent pas :
 
 `.github/workflows/deploy.yml`, au gabarit SFTP commun (celui de Schedules) :
 à chaque push sur `main` et à la main. Il **assemble le site par une liste
-fermée** (`index.html`, `offres.html`, `confidentialite.html`, `.htaccess`,
+fermée** (`index.html`, `offres.html`, `connexion-google.html`, `confidentialite.html`, `.htaccess`,
 `assets/`) : un fichier ajouté au site s'ajoute à cette liste, sinon il ne
 part pas. Rien de `supabase/`, `docs/`, `tools/`, ni l'ancien script ; le
 `.htaccess` les refuse aussi. `FTP_REMOTE_DIR` vaut `/website-jobbly` (compte

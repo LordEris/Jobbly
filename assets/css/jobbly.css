@@ -331,12 +331,29 @@ a { color: var(--accent-ink); }
   color: var(--ink-2); font: 700 15px/1 var(--lp-font-body); cursor: pointer;
 }
 .tabs button[aria-selected="true"] { background: var(--card); color: var(--accent-ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
-.google-gis { display: flex; justify-content: center; min-height: 44px; }
-.google-gis__button { width: 100%; max-width: 400px; display: flex; justify-content: center; }
-/* Le cadre du bouton de Google garde le schéma clair : avec celui de la page
-   en sombre, le navigateur pose un fond blanc opaque autour du bouton arrondi
-   (même correction qu'account.lorderis.dev). */
-.google-gis iframe { color-scheme: light; }
+/* « Continuer avec Google » : notre bouton, à la marque de Google — logo G en
+   quatre couleurs, libellé du kit, et les couleurs que ses règles fixent
+   (clair : fond blanc, filet #747775, texte #1F1F1F ; sombre : fond #131314,
+   filet #8E918F, texte #E3E3E3). Elles appartiennent à Google : c'est
+   l'exception à la règle des jetons, comme le pied de page LordEris. Les
+   contrastes (≥ 4,5:1) sont ceux de Google. L'état pressé change le fond. */
+.google-signin {
+  display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;
+  min-height: 44px; padding: 0 18px; border-radius: 999px; cursor: pointer;
+  border: 1px solid #747775; background: #FFFFFF; color: #1F1F1F;
+  font: 700 15px/1.2 var(--lp-font-body);
+}
+.google-signin:hover { background: #F2F2F2; }
+.google-signin:active { background: #E8E8E8; }
+.google-signin:disabled { cursor: progress; }
+.google-signin svg { width: 18px; height: 18px; flex: none; }
+.google-signin[hidden] { display: none; }
+:root[data-theme="dark"] .google-signin { background: #131314; color: #E3E3E3; border-color: #8E918F; }
+:root[data-theme="dark"] .google-signin:hover { background: #26272A; }
+:root[data-theme="dark"] .google-signin:active { background: #303134; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .google-signin { background: #131314; color: #E3E3E3; border-color: #8E918F; }
+}
 
 /* Messages : un mot et une icône, jamais la seule couleur. */
 .status {

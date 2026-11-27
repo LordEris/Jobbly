@@ -140,8 +140,19 @@ async function start() {
     else if (event === 'SIGNED_IN' && s && !state.user) void enterApp(s)
   })
 
+  $('googleBtn').addEventListener('click', onGoogleClick)
+  // Revenu de Google par « Précédent » : le navigateur rend la page telle
+  // qu'on l'a quittée (cache de navigation), bouton désactivé compris.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) $('googleBtn').disabled = false })
+
   if (session) await enterApp(session)
-  else showSignIn()
+  else {
+    showSignIn()
+    // De retour de Google (connexion-google.html) : le jeton est donné à
+    // Supabase une seule fois, puis la suite d'une connexion ; un échec se
+    // dit sur l'écran de connexion.
+    if (window.googleAuth) await window.googleAuth.finish(onGoogleError)
+  }
 }
 
 // ── Connexion ──────────────────────────────────────────────────────────────
@@ -214,20 +225,48 @@ async function onForgot() {
   }
 }
 
+// « Continuer avec Google » est notre bouton (décision du propriétaire,
+// 25 novembre 2026) : la page part chez Google dans le même onglet et revient
+// par connexion-google.html, puis finish() termine ici. Le script de Google
+// ne sert plus qu'à l'invite One Tap : chargé à l'adresse publiée seulement
+// (ailleurs, Google refuse l'origine), et s'il ne vient pas, le bouton marche
+// quand même.
+const PUBLISHED_ORIGIN = 'https://jobbly.lorderis.dev'
+
+function onGoogleError(code) {
+  setBox('authStatus', statusBox(code === 'cancelled' ? 'warn' : 'error', t(
+    code === 'cancelled' ? 'auth.google_cancelled'
+      : code === 'expired' ? 'auth.google_expired'
+        : code === 'network' ? 'auth.err_network'
+          : 'auth.google_refused')))
+}
+
+async function onGoogleClick() {
+  const btn = $('googleBtn')
+  btn.disabled = true
+  try {
+    await window.googleAuth.start()
+  } catch (e) {
+    btn.disabled = false
+    onGoogleError('refused')
+  }
+}
+
 async function setupGoogle() {
   const note = $('googleNote')
   const say = (key) => { note.textContent = t(key); note.setAttribute('data-i18n', key); note.hidden = false }
   const enabled = await googleEnabled()
   if (enabled === false) { say('auth.google_off'); return }
   if (enabled !== true) { say('auth.google_unknown'); return }
-  if (!window.googleAuth || $('viewSignIn').hidden) return
+  if (!window.googleAuth || !window.googleAuth.isConfigured()) return
+  $('googleBtn').hidden = false
+  if (location.origin !== PUBLISHED_ORIGIN || $('viewSignIn').hidden) return
   try {
     await loadGoogleIdentity()
-    const mounted = await window.googleAuth.mount('googleGisButton', () => setBox('authStatus', statusBox('error', t('auth.google_refused'))))
-    if (!mounted) { say('auth.google_blocked'); return }
-    window.googleAuth.promptOneTap().catch(() => {})
+    // google-auth.js écarte une session ouverte et une invite déjà refusée.
+    await window.googleAuth.promptOneTap(onGoogleError)
   } catch (e) {
-    say('auth.google_blocked')
+    // Bloqueur, réseau : l'invite manque, le bouton n'en dépend pas.
   }
 }
 
