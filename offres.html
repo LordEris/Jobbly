@@ -18,7 +18,6 @@
      barre — scripts externes et synchrones (la CSP refuse l'en ligne). -->
 <script src="assets/js/theme-init.js"></script>
 <script src="assets/js/prefs.js"></script>
-<link rel="stylesheet" href="assets/css/lorderis-footer.css">
 <link rel="stylesheet" href="assets/css/lorderis-toggles.css">
 <link rel="stylesheet" href="assets/css/jobbly.css">
 <!-- SDK Supabase : version figée, empreinte SRI vérifiée par le navigateur
@@ -113,7 +112,11 @@
       <p class="muted" id="googleNote" hidden></p>
       <div id="authStatus" role="status" aria-live="polite"></div>
     </div>
-    <p class="muted"><a href="/?presentation" data-i18n="auth.what_is">Qu'est-ce que Jobbly ?</a></p>
+    <!-- Pas de pied de page LordEris dans l'appli (décision du propriétaire,
+         25 novembre 2026) : la politique reste à un geste dès la connexion,
+         et les réglages gardent la politique et « Gérer mon compte Lorderis ». -->
+    <p class="muted"><a href="/?presentation" data-i18n="auth.what_is">Qu'est-ce que Jobbly ?</a>
+      · <a href="https://jobbly.lorderis.dev/confidentialite.html" data-i18n="about.privacy">Politique de confidentialité</a></p>
   </section>
 
   <!-- Les offres -->
@@ -233,22 +236,5 @@
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<footer class="lorderis-footer" aria-label="LordEris">
-  <div class="lorderis-footer__inner">
-    <a class="lorderis-footer__brand" href="https://lorderis.dev/">
-      <img src="assets/img/lorderis-logo.png" alt="" width="42" height="42">
-      <span>LordEris</span>
-    </a>
-    <p class="lorderis-footer__copy" data-i18n="footer.copy">© 2026 LordEris. Développeur full-stack &amp; Minecraft.</p>
-    <nav class="lorderis-footer__links" aria-label="LordEris">
-      <a href="https://github.com/LordEris" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg> GitHub</a>
-      <a href="https://discord.lorderis.dev" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 127.14 96.36" fill="currentColor" aria-hidden="true" focusable="false"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg> Discord</a>
-      <a href="https://fiverr.lorderis.dev" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M23.004 15.588a.995.995 0 1 0 .002-1.99.995.995 0 0 0-.002 1.99zm-.996-3.705h-.85c-.546 0-.84.41-.84 1.092v2.466h-1.61v-3.558h-.684c-.547 0-.84.41-.84 1.092v2.466h-1.61v-4.874h1.61v.74c.264-.574.626-.74 1.163-.74h1.972v.74c.264-.574.625-.74 1.162-.74h.527v1.316zm-6.786 1.501h-3.359c.088.546.43.858 1.006.858.43 0 .732-.175.83-.487l1.425.4c-.351.848-1.22 1.364-2.255 1.364-1.748 0-2.549-1.355-2.549-2.515 0-1.14.703-2.505 2.45-2.505 1.856 0 2.471 1.384 2.471 2.408 0 .224-.01.37-.02.477zm-1.562-.945c-.04-.42-.342-.81-.889-.81-.508 0-.81.225-.908.81h1.797zM7.508 15.44h1.416l1.767-4.874h-1.62l-.86 2.837-.878-2.837H5.72l1.787 4.874zm-6.6 0H2.51v-3.558h1.524v3.558h1.591v-4.874H2.51v-.302c0-.332.235-.536.606-.536h.918V8.412H2.85c-1.162 0-1.943 0.712-1.943 1.755v.4H0v1.316h.908v3.558z"/></svg> Fiverr</a>
-      <a href="https://builtbybit.com/members/lorderis.529266/#recent-content" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11.877.032 1.252 5.885a.253.253 0 0 0 .003.446l5.679 3.02c.077.041.17.04.246-.004l4.694-2.697a.254.254 0 0 1 .253 0l4.692 2.697a.253.253 0 0 0 .246.004l5.682-3.021a.253.253 0 0 0 .003-.446L12.122.031a.254.254 0 0 0-.245 0ZM6.924 10.898l-5.71-3.036a.254.254 0 0 0-.373.224V18.25c0 .093.05.178.131.222l9.976 5.495a.254.254 0 0 0 .376-.222v-6.053a.255.255 0 0 0-.127-.22l-4.012-2.305a.252.252 0 0 1-.127-.22v-3.825a.253.253 0 0 0-.135-.224Zm10.152 0 5.71-3.035a.254.254 0 0 1 .373.224v10.164c0 .093-.05.178-.131.222l-9.976 5.495a.254.254 0 0 1-.376-.222v-6.053c0-.091.049-.175.127-.22l4.012-2.305a.252.252 0 0 0 .127-.22v-3.825c0-.094.052-.18.135-.224Z"/></svg> BuiltByBit</a>
-      <a href="https://jobbly.lorderis.dev/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
-      <a href="https://account.lorderis.dev/" data-i18n="footer.account">Mon compte</a>
-    </nav>
-  </div>
-</footer>
 </body>
 </html>

@@ -4,7 +4,7 @@
 // Les textes du compte Lorderis sont ceux du kit, au mot près
 // (Account-LordEris, reference/texts.json, et la page de connexion commune) :
 // auth.lead, auth.signup_note, auth.google, auth.google_off, data.delete,
-// data.deleted, data.where, footer.*. Ils tutoient, comme le reste de Jobbly.
+// data.deleted, data.where. Ils tutoient, comme le reste de Jobbly.
 // Une clé absente en anglais retombe sur le français ; tools/rules.test.mjs
 // vérifie que les deux catalogues ont les mêmes clés et les mêmes {variables}.
 // ────────────────────────────────────────────────────────────────────────────
@@ -243,11 +243,6 @@ export const STRINGS = {
     'data.back_signin': 'Revenir à la connexion',
     'about.title': 'À propos',
     'about.privacy': 'Politique de confidentialité',
-    // Le pied de page LordEris : textes du kit, au mot près
-    // (Account-LordEris, reference/texts.json, clé « footer »).
-    'footer.copy': '© 2026 LordEris. Développeur full-stack & Minecraft.',
-    'footer.privacy': 'Confidentialité',
-    'footer.account': 'Mon compte',
   },
   en: {
     'title.app': 'Jobbly — my job offers',
@@ -482,9 +477,6 @@ export const STRINGS = {
     'data.back_signin': 'Back to sign-in',
     'about.title': 'About',
     'about.privacy': 'Privacy policy',
-    'footer.copy': '© 2026 LordEris. Full-stack & Minecraft developer.',
-    'footer.privacy': 'Privacy policy',
-    'footer.account': 'My account',
   },
 }
 

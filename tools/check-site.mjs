@@ -401,6 +401,32 @@ async function checkFooter(name, page, lang, theme) {
   ok(name, 'pied de page LordEris')
 }
 
+/** La page de l'appli ne porte pas le pied de page LordEris : une appli reste
+ *  une appli, même dans un site (décision du propriétaire, 25 novembre
+ *  2026). Ce qu'il portait d'utile reste : la politique sous la connexion. */
+async function checkNoFooter(name, page, { signIn = false } = {}) {
+  const f = await page.evaluate(() => ({
+    footers: document.querySelectorAll('footer.lorderis-footer, .lorderis-footer').length,
+    sheet: !!document.querySelector('link[href*="lorderis-footer"]'),
+    copy: document.body.innerText.includes('© 2026 LordEris'),
+    privacy: [...document.querySelectorAll('#viewSignIn a[href="https://jobbly.lorderis.dev/confidentialite.html"]')]
+      .filter((a) => a.getClientRects().length).length,
+  }))
+  if (f.footers || f.sheet || f.copy) fail(name, `pied de page LordEris dans l'appli : ${JSON.stringify(f)}`)
+  else ok(name, 'pas de pied de page LordEris dans l\'appli')
+  if (signIn && f.privacy !== 1) fail(name, `politique sous la connexion : ${f.privacy} lien(s) visible(s) au lieu de 1`)
+}
+
+/** Les réglages gardent la politique et « Gérer mon compte Lorderis ». */
+async function checkSettingsLinks(name, page) {
+  const hrefs = await page.evaluate(() => [...document.querySelectorAll('#viewSettings a')]
+    .filter((a) => a.getClientRects().length).map((a) => a.getAttribute('href')))
+  for (const want of ['https://jobbly.lorderis.dev/confidentialite.html', 'https://account.lorderis.dev/']) {
+    if (hrefs.filter((h) => h === want).length !== 1) fail(name, `réglages : ${want} absent ou répété (${hrefs.join(' ')})`)
+  }
+  ok(name, 'réglages : politique et compte Lorderis')
+}
+
 // ═══ 1. Chaque page, chaque format, chaque thème, chaque langue ═══════════
 for (const width of [390, 1280]) {
   for (const theme of ['light', 'dark']) {
@@ -441,7 +467,7 @@ for (const width of [390, 1280]) {
         await page.goto(base + '/offres.html')
         await page.waitForSelector('#viewSignIn:not([hidden])')
         await page.waitForSelector('#googleGis:not([hidden]) iframe', { timeout: 6000 }).then(() => ok(name, 'bouton Google monté'), () => fail(name, 'bouton Google non monté'))
-        await checkFooter(name, page, lang, theme)
+        await checkNoFooter(name, page, { signIn: true })
         await shot(page, `connexion-${tag}.png`)
         await signIn(page)
         await page.waitForSelector('#viewOffers:not([hidden]) .card')
@@ -452,6 +478,8 @@ for (const width of [390, 1280]) {
         await shot(page, `detail-${tag}.png`)
         await page.click('#navSettings')
         await page.waitForSelector('#viewSettings:not([hidden]) .chip')
+        await checkSettingsLinks(name, page)
+        await checkNoFooter(name, page)
         await shot(page, `reglages-${tag}.png`)
       })
     }

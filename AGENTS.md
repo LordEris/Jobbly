@@ -70,8 +70,10 @@ celui du projet Supabase commun, dont le dépôt de référence est
 [Account-LordEris](https://github.com/LordEris/Account-LordEris) : même
 e-mail, même mot de passe, même compte Google partout, gérés sur
 `account.lorderis.dev`. Une app ne crée jamais son propre système de comptes.
-Les textes de connexion, d'inscription et de suppression, et le pied de page
-LordEris (celui de lorderis.dev) en bas de page sont communs, au mot près.
+Les textes de connexion, d'inscription et de suppression sont communs, au mot
+près ; le pied de page LordEris (celui de lorderis.dev) va en bas des pages de
+site (présentations, pages légales, sites), jamais dans une appli, même ouverte
+dans un navigateur.
 
 **Livrer** : une branche, une pull request, jamais de poussée directe sur la
 branche par défaut. Avant d'ajouter à l'index, relire `git status` : un
@@ -221,16 +223,20 @@ Trois parties, qui ne se mélangent pas :
   `tools/check-site.mjs` les compare à Account-LordEris quand il est cloné à
   côté.
 - **Le pied de page est celui de lorderis.dev, le même dans tous les
-  projets** (décision du propriétaire, 22 novembre 2026 ; gabarit
-  d'Account-LordEris, `reference/footer/`) : logo LordEris, ©, GitHub ·
-  Discord · Fiverr · BuiltByBit · Confidentialité (la politique de Jobbly) ·
-  Mon compte, textes du kit au mot près (`footer.*` de `i18n.js` pour
-  l'appli, blocs FR / EN pour la présentation et la politique). C'est
+  projets, et seulement sur les pages de site** (décision du propriétaire,
+  22 novembre 2026 ; gabarit d'Account-LordEris, `reference/footer/`) : la
+  présentation (`index.html`) et la politique (`confidentialite.html`) le
+  portent — logo LordEris, ©, GitHub · Discord · Fiverr · BuiltByBit ·
+  Confidentialité (la politique de Jobbly) · Mon compte, textes du kit au mot
+  près en blocs FR / EN. **La page de l'appli (`offres.html`) ne le porte
+  pas** : une appli reste une appli, même dans un site (décision du
+  25 novembre 2026). Elle garde la politique sous la connexion et dans les
+  réglages, et « Gérer mon compte Lorderis » dans les réglages. C'est
   l'exception à la règle des couleurs : il reste sombre dans les deux thèmes
   et `jobbly.css` n'y touche pas. Rien ne le double juste au-dessus : pas de
   bloc « Pages légales » qui répéterait « Confidentialité » (demande du
   propriétaire, 22 novembre 2026). `tools/check-site.mjs` le relit sur les
-  trois pages, et refuse un tel bloc.
+  deux pages de site, refuse un tel bloc, et refuse le pied dans l'appli.
 
 ### Publier
 
