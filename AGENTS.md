@@ -257,12 +257,18 @@ Trois parties, qui ne se mélangent pas :
 
 ### Publier
 
-`.github/workflows/deploy.yml`, au gabarit SFTP commun (celui de Schedules) :
-à chaque push sur `main` et à la main. Il **assemble le site par une liste
-fermée** (`index.html`, `offres.html`, `connexion-google.html`, `confidentialite.html`, `.htaccess`,
+`.github/workflows/deploy.yml`, à chaque push sur `main` et à la main. L'envoi
+est celui du workflow réutilisable commun, `sftp-deploy.yml` de
+[LordEris/workflows](https://github.com/LordEris/workflows), appelé par SHA
+avec sa version en commentaire : une correction du gabarit SFTP se fait
+là-bas, et arrive ici par une montée de version (Dependabot la propose). Le
+fichier d'ici n'en garde que les paramètres, et ce qui est propre à Jobbly :
+il **assemble le site par une liste fermée** (`index.html`, `offres.html`, `connexion-google.html`, `confidentialite.html`, `.htaccess`,
 `assets/`) : un fichier ajouté au site s'ajoute à cette liste, sinon il ne
 part pas. Rien de `supabase/`, `docs/`, `tools/`, ni l'ancien script ; le
-`.htaccess` les refuse aussi. `FTP_REMOTE_DIR` vaut `/website-jobbly` (compte
+`.htaccess` les refuse aussi. Le site assemblé part en artefact
+(`include-hidden-files`, sans quoi `.htaccess` resterait en route).
+`FTP_REMOTE_DIR` vaut `/website-jobbly` (compte
 global) ou `/` (compte limité au dossier), rien d'autre. La relecture du site
 publié avertit sans échouer tant que le sous-domaine ne répond pas.
 
