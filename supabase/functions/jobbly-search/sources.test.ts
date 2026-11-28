@@ -129,6 +129,38 @@ test('Jooble : balises du résumé retirées, offres hors sujet écartées', () 
   assert.equal(parseJooble([], 'x', 'k'), null);
 });
 
+test('pertinence : « Plombier » ne rend plus de couvreur, quelle que soit la source', () => {
+  // France Travail rendait ces offres pour « Plombier » sans que le mot y paraisse.
+  const ft = parseFranceTravail(
+    {
+      resultats: [
+        { id: '190AAAA', intitule: 'Couvreur (H/F)', description: 'Pose et réparation de toitures.', appellationlibelle: 'Couvreur / Couvreuse', romeLibelle: 'Pose et restauration de couvertures' },
+        { id: '190AAAB', intitule: 'Chauffagiste H/F', description: 'Entretien de chaudières.', appellationlibelle: 'Plombier chauffagiste / Plombière chauffagiste' },
+        { id: '190AAAC', intitule: 'Plombière H/F', description: 'Sanitaires.' },
+      ],
+    },
+    'Orléans',
+    'Plombier',
+  );
+  assert.deepEqual(ft?.map((o) => o.title), ['Chauffagiste H/F', 'Plombière H/F'], 'le métier attribué compte, les accents non');
+  // Sans mot-clé, rien n'est écarté (lecture seule).
+  assert.equal(parseFranceTravail({ resultats: [{ id: '190AAAD', intitule: 'Couvreur' }] }, 'x')?.length, 1);
+
+  const cj = parseCareerjet(
+    { jobs: [{ title: 'Couvreur zingueur', url: 'https://www.careerjet.fr/jobad/fr9', description: 'Toiture.' }, { title: 'Plombier', url: 'https://www.careerjet.fr/jobad/fr8', description: 'x' }] },
+    'Orléans',
+    'Plombier',
+  );
+  assert.deepEqual(cj?.map((o) => o.title), ['Plombier']);
+
+  const ad = parseAdzuna(
+    { results: [{ id: '1', title: 'Couvreur', description: 'Toiture.' }, { id: '2', title: 'Aide plombier', description: 'x' }] },
+    'Orléans',
+    'Plombier',
+  );
+  assert.deepEqual(ad?.map((o) => o.title), ['Aide plombier']);
+});
+
 test('Careerjet : date HTTP lue, `LOCATIONS` sans offre', () => {
   const out = parseCareerjet(
     { type: 'JOBS', jobs: [{ title: 'Plombier', company: 'Dupont', locations: 'Orléans', url: 'https://www.careerjet.fr/jobad/fr1', date: 'Tue, 17 Nov 2026 09:00:00 GMT', description: 'x', salary: '' }] },

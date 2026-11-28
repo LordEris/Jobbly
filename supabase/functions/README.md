@@ -29,6 +29,12 @@ admise en CORS) l'appelle par le bouton « Actualiser ».
    La Bonne Alternance), un budget commun d'environ 60 s, quelques appels
    simultanés par source. Une source qui échoue n'arrête pas les autres.
    Une offre dont l'échéance est passée n'est ni gardée ni comptée.
+   **Chaque offre doit parler du mot-clé cherché** (`relevant`, accents
+   ignorés), quelle que soit la source : France Travail, Careerjet et Adzuna
+   élargissent le mot-clé — « Plombier » rendait des offres de couvreur —, et
+   La Bonne Alternance est interrogée par codes ROME. Pour France Travail, le
+   métier qu'il attribue à l'offre (`appellationlibelle`, `romeLibelle`)
+   compte comme le texte : un « Chauffagiste » classé plombier reste.
    La rémunération annoncée est lue au passage (`salaire.libelle` de France
    Travail, `salary` de Jooble et Careerjet, `salary_min`/`salary_max`
    d'Adzuna et de Careerjet ; l'estimation d'Adzuna, `salary_is_predicted`,
