@@ -554,7 +554,13 @@ function firstText(...vs: unknown[]): unknown {
 }
 
 /** Une réponse illisible rend `null` : la source est en `error`, pas à zéro offre. */
-export function parseFranceTravail(json: unknown, city: string): RawOffer[] | null {
+/**
+ * France Travail. Avec `keyword`, une offre n'est gardée que si elle parle du
+ * mot-clé, dans son texte ou dans le métier que France Travail lui attribue
+ * (`appellationlibelle`, `romeLibelle`) : un « Chauffagiste » classé « Plombier
+ * chauffagiste » reste, un « Couvreur » rendu pour « Plombier » part.
+ */
+export function parseFranceTravail(json: unknown, city: string, keyword?: string): RawOffer[] | null {
   if (!isObject(json)) return null;
   const list = json.resultats;
   if (list === undefined) return [];
@@ -581,7 +587,8 @@ export function parseFranceTravail(json: unknown, city: string): RawOffer[] | nu
       },
       city,
     );
-    if (r) out.push(r);
+    const job = [o.appellationlibelle, o.romeLibelle].filter((x) => typeof x === 'string').join(' ');
+    if (r && (keyword === undefined || relevant(r.title, r.summary, [keyword], job))) out.push(r);
   }
   return out;
 }
@@ -638,14 +645,17 @@ const KEYWORD_STOPWORDS = new Set(['de', 'du', 'le', 'la', 'les', 'en', 'et', 'u
 
 /**
  * Au moins un mot significatif d'un mot-clé dans le titre ou le résumé
- * (`_jooble_relevant` du script). Jooble rend des offres voisines ; La Bonne
- * Alternance est interrogée par codes ROME fixes (ceux du script, plomberie)
- * et ne garde donc que ce qui parle des mots-clés de la personne.
+ * (`_jooble_relevant` du script), accents ignorés. Toutes les sources y
+ * passent : chacune élargit le mot-clé à sa façon — France Travail rend des
+ * offres de couvreur pour « Plombier », sans que le mot paraisse nulle part —,
+ * et La Bonne Alternance est interrogée par codes ROME fixes (ceux du script,
+ * plomberie). `extra` est ce que la source dit du métier sans l'écrire dans
+ * l'offre (l'appellation de France Travail) : il compte comme le titre.
  */
-export function relevant(title: string, summary: string, keywords: string[]): boolean {
-  const text = (title + ' ' + summary).toLowerCase();
+export function relevant(title: string, summary: string, keywords: string[], extra = ''): boolean {
+  const text = lowerAscii(title + ' ' + summary + ' ' + extra);
   for (const k of keywords) {
-    const words = k.toLowerCase().split(/\s+/).filter((w) => w.length > 2 && !KEYWORD_STOPWORDS.has(w));
+    const words = lowerAscii(k).split(/\s+/).filter((w) => w.length > 2 && !KEYWORD_STOPWORDS.has(w));
     if (words.some((w) => text.includes(w))) return true;
   }
   return false;
@@ -669,7 +679,8 @@ export function parseJooble(json: unknown, city: string, keyword: string): RawOf
   return out;
 }
 
-export function parseCareerjet(json: unknown, city: string): RawOffer[] | null {
+/** Careerjet ; avec `keyword`, seulement les offres qui en parlent. */
+export function parseCareerjet(json: unknown, city: string, keyword?: string): RawOffer[] | null {
   if (!isObject(json)) return null;
   const list = json.jobs;
   // Careerjet rend `type: "LOCATIONS"` quand la ville est ambiguë : aucune offre, pas une panne.
@@ -692,12 +703,13 @@ export function parseCareerjet(json: unknown, city: string): RawOffer[] | null {
       },
       city,
     );
-    if (r) out.push(r);
+    if (r && (keyword === undefined || relevant(r.title, r.summary, [keyword]))) out.push(r);
   }
   return out;
 }
 
-export function parseAdzuna(json: unknown, city: string): RawOffer[] | null {
+/** Adzuna ; avec `keyword`, seulement les offres qui en parlent. */
+export function parseAdzuna(json: unknown, city: string, keyword?: string): RawOffer[] | null {
   if (!isObject(json)) return null;
   const list = json.results;
   if (list === undefined || list === null) return [];
@@ -726,7 +738,7 @@ export function parseAdzuna(json: unknown, city: string): RawOffer[] | null {
       },
       city,
     );
-    if (r) out.push(r);
+    if (r && (keyword === undefined || relevant(r.title, r.summary, [keyword]))) out.push(r);
   }
   return out;
 }

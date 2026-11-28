@@ -14,8 +14,10 @@
 //     `commune`, la recherche est nationale et ignore la ville ;
 //   · les descriptions détaillées France Travail ne sont demandées que s'il
 //     reste du temps, et pour un nombre borné d'offres ;
-//   · La Bonne Alternance garde les codes ROME du script (plomberie) et ne
-//     garde que les offres qui parlent des mots-clés de la personne.
+//   · La Bonne Alternance garde les codes ROME du script (plomberie) ;
+//   · chaque offre, quelle que soit sa source, doit parler du mot-clé
+//     cherché (`relevant`) : France Travail, Careerjet et Adzuna élargissent
+//     le mot-clé, et « Plombier » rendait des offres de couvreur.
 //
 // Aucun mot-clé, aucune ville, aucun contenu d'offre dans un message d'erreur
 // ou un journal : les échecs rendent un code.
@@ -220,7 +222,7 @@ async function searchFranceTravail(keys: SourceKeys, deps: SearchDeps, keyword: 
       { headers: { ...HEADERS, Authorization: `Bearer ${token}` } },
       CALL_TIMEOUT_MS,
     );
-    const offers = parseFranceTravail(await readJson(res), loc.city);
+    const offers = parseFranceTravail(await readJson(res), loc.city, keyword);
     if (!offers) throw new Error('invalid');
     return offers;
   } catch (e) {
@@ -286,7 +288,7 @@ async function searchCareerjet(keys: SourceKeys, deps: SearchDeps, keyword: stri
     sort: 'date',
   });
   const res = await call(deps, `https://public.api.careerjet.net/search?${params}`, { headers: HEADERS }, CALL_TIMEOUT_MS);
-  const offers = parseCareerjet(await readJson(res), loc.city);
+  const offers = parseCareerjet(await readJson(res), loc.city, keyword);
   if (!offers) throw new Error('invalid');
   return offers;
 }
@@ -303,7 +305,7 @@ async function searchAdzuna(keys: SourceKeys, deps: SearchDeps, keyword: string,
     sort_by: 'date',
   });
   const res = await call(deps, `https://api.adzuna.com/v1/api/jobs/fr/search/1?${params}`, { headers: HEADERS }, CALL_TIMEOUT_MS);
-  const offers = parseAdzuna(await readJson(res), loc.city);
+  const offers = parseAdzuna(await readJson(res), loc.city, keyword);
   if (!offers) throw new Error('invalid');
   return offers;
 }
